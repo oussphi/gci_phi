@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Logo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+    <div th:replace="fragments/header :: body"></div>
+    
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow">
+        <h1 class="text-2xl font-bold text-indigo-700 mb-6">Test du Logo</h1>
+        <p>Cette page teste l'affichage du logo dans le header.</p>
+        
+        <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+            <h2 class="font-semibold text-blue-800 mb-2">Informations de test :</h2>
+            <p>Si vous voyez le logo ci-dessus, cela signifie qu'il fonctionne correctement.</p>
+            <p>URL de l'image : <code>/images/logo4.png</code></p>
+        </div>
+    </div>
+</body>
+</html>

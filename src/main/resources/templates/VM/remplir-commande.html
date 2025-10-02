@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>Remplir Commande</title></head>
+<body>
+    <div th:replace="fragments/header :: body"></div>
+
+    <h2 th:text="'Offre sélectionnée : ' + ${offre.nom}"></h2>
+    <form th:action="@{/client/validerCommande}" method="post">
+        <input type="hidden" name="offreId" th:value="${offre.id}" />
+        <table border="1">
+            <thead>
+                <tr><th>Produit</th><th>Prix</th><th>Min</th><th>Max</th><th>Quantité</th></tr>
+            </thead>
+            <tbody>
+                <tr th:each="p : ${produits}">
+                    <td th:text="${p.produit.nom}"></td>
+                    <td th:text="${p.prix}"></td>
+                    <td th:text="${p.quantiteMin}"></td>
+                    <td th:text="${p.quantiteMax}"></td>
+                    <td>
+                        <input type="number" th:name="${'quantite_' + p.produit.id}" min="0"/>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="submit">Valider</button>
+    </form>
+</body>
+</html>

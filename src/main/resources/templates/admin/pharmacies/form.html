@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pharmacie != null ? 'Modifier la Pharmacie' : 'Nouvelle Pharmacie'} + ' - Administration'">Pharmacie - Administration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <a href="/admin/pharmacies" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-arrow-left text-xl"></i>
+                    </a>
+                    <h1 class="text-2xl font-bold text-gray-900" th:text="${pharmacie != null ? 'Modifier la Pharmacie' : 'Nouvelle Pharmacie'}">Pharmacie</h1>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+            <form th:action="@{/admin/pharmacies/save}" th:object="${pharmacie}" method="post" class="space-y-6">
+                <input type="hidden" th:field="*{id}" />
+                
+                <!-- Basic Information -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Informations de base</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="nom" class="block text-sm font-medium text-gray-700 mb-2">
+                                Nom de la pharmacie <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="nom" th:field="*{nom}" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Nom de la pharmacie">
+                            <div th:if="${#fields.hasErrors('nom')}" class="mt-1 text-sm text-red-600" th:errors="*{nom}"></div>
+                        </div>
+                        
+                        <div>
+                            <label for="code" class="block text-sm font-medium text-gray-700 mb-2">
+                                Code <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="code" th:field="*{code}" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Code unique">
+                            <div th:if="${#fields.hasErrors('code')}" class="mt-1 text-sm text-red-600" th:errors="*{code}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Informations de contact</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="telephone" class="block text-sm font-medium text-gray-700 mb-2">
+                                Téléphone <span class="text-red-500">*</span>
+                            </label>
+                            <input type="tel" id="telephone" th:field="*{telephone}" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="+212 6 XX XX XX XX">
+                            <div th:if="${#fields.hasErrors('telephone')}" class="mt-1 text-sm text-red-600" th:errors="*{telephone}"></div>
+                        </div>
+                        
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" id="email" th:field="*{email}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="email@example.com">
+                            <div th:if="${#fields.hasErrors('email')}" class="mt-1 text-sm text-red-600" th:errors="*{email}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address Information -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Adresse</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="adresse" class="block text-sm font-medium text-gray-700 mb-2">
+                                Adresse <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="adresse" th:field="*{adresse}" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="123 Rue Example">
+                            <div th:if="${#fields.hasErrors('adresse')}" class="mt-1 text-sm text-red-600" th:errors="*{adresse}"></div>
+                        </div>
+                        
+                        <div>
+                            <label for="ville" class="block text-sm font-medium text-gray-700 mb-2">
+                                Ville <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="ville" th:field="*{ville}" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Casablanca">
+                            <div th:if="${#fields.hasErrors('ville')}" class="mt-1 text-sm text-red-600" th:errors="*{ville}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assignment and Status -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Affectation et statut</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="secteur" class="block text-sm font-medium text-gray-700 mb-2">Secteur</label>
+                            <select id="secteur" th:field="*{secteur}" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Sélectionner un secteur</option>
+                                <option th:each="secteur : ${secteurs}" 
+                                        th:value="${secteur.id}" 
+                                        th:text="${secteur.nom}"
+                                        th:selected="${pharmacie != null && pharmacie.secteur != null && pharmacie.secteur.id == secteur.id}">
+                                    Secteur
+                                </option>
+                            </select>
+                            <div th:if="${#fields.hasErrors('secteur')}" class="mt-1 text-sm text-red-600" th:errors="*{secteur}"></div>
+                        </div>
+                        
+                        <div>
+                            <label for="user" class="block text-sm font-medium text-gray-700 mb-2">Utilisateur assigné</label>
+                            <select id="user" th:field="*{user}" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Sélectionner un utilisateur</option>
+                                <option th:each="user : ${users}" 
+                                        th:value="${user.id}" 
+                                        th:text="${user.username + ' (' + user.role.nom + ')'}"
+                                        th:selected="${pharmacie != null && pharmacie.user != null && pharmacie.user.id == user.id}">
+                                    Utilisateur
+                                </option>
+                            </select>
+                            <div th:if="${#fields.hasErrors('user')}" class="mt-1 text-sm text-red-600" th:errors="*{user}"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <label class="flex items-center">
+                            <input type="checkbox" th:field="*{isActive}" 
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <span class="ml-2 text-sm text-gray-700">Pharmacie active</span>
+                        </label>
+                        <p class="mt-1 text-sm text-gray-500">Une pharmacie inactive ne peut pas recevoir de commandes</p>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Informations supplémentaires</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                            <textarea id="description" th:field="*{description}" rows="3"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                      placeholder="Description de la pharmacie..."></textarea>
+                            <div th:if="${#fields.hasErrors('description')}" class="mt-1 text-sm text-red-600" th:errors="*{description}"></div>
+                        </div>
+                        
+                        <div>
+                            <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">Notes internes</label>
+                            <textarea id="notes" th:field="*{notes}" rows="3"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                      placeholder="Notes pour l'équipe..."></textarea>
+                            <div th:if="${#fields.hasErrors('notes')}" class="mt-1 text-sm text-red-600" th:errors="*{notes}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-end space-x-4 pt-6">
+                    <a href="/admin/pharmacies" 
+                       class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Annuler
+                    </a>
+                    <button type="submit" 
+                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <span th:text="${pharmacie != null ? 'Mettre à jour' : 'Créer'}">Enregistrer</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Form validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const requiredFields = form.querySelectorAll('[required]');
+            
+            // Real-time validation
+            requiredFields.forEach(field => {
+                field.addEventListener('blur', function() {
+                    validateField(this);
+                });
+                
+                field.addEventListener('input', function() {
+                    if (this.classList.contains('border-red-500')) {
+                        validateField(this);
+                    }
+                });
+            });
+            
+            // Form submission validation
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+                
+                requiredFields.forEach(field => {
+                    if (!validateField(field)) {
+                        isValid = false;
+                    }
+                });
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Veuillez corriger les erreurs dans le formulaire.');
+                }
+            });
+            
+            function validateField(field) {
+                const value = field.value.trim();
+                const errorDiv = field.parentNode.querySelector('.text-red-600');
+                
+                if (field.hasAttribute('required') && !value) {
+                    field.classList.add('border-red-500');
+                    if (errorDiv) {
+                        errorDiv.textContent = 'Ce champ est obligatoire';
+                    }
+                    return false;
+                }
+                
+                // Email validation
+                if (field.type === 'email' && value) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(value)) {
+                        field.classList.add('border-red-500');
+                        if (errorDiv) {
+                            errorDiv.textContent = 'Format d\'email invalide';
+                        }
+                        return false;
+                    }
+                }
+                
+                // Phone validation
+                if (field.id === 'telephone' && value) {
+                    const phoneRegex = /^(\+212|0)?[67]\d{8}$/;
+                    if (!phoneRegex.test(value.replace(/\s/g, ''))) {
+                        field.classList.add('border-red-500');
+                        if (errorDiv) {
+                            errorDiv.textContent = 'Format de téléphone invalide';
+                        }
+                        return false;
+                    }
+                }
+                
+                field.classList.remove('border-red-500');
+                if (errorDiv) {
+                    errorDiv.textContent = '';
+                }
+                return true;
+            }
+            
+            // Auto-format phone number
+            const phoneField = document.getElementById('telephone');
+            if (phoneField) {
+                phoneField.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value.startsWith('212')) {
+                        value = '+' + value;
+                    } else if (value.startsWith('0')) {
+                        value = value.substring(1);
+                    }
+                    if (value.length > 0 && !value.startsWith('+')) {
+                        value = '+212' + value;
+                    }
+                    e.target.value = value;
+                });
+            }
+        });
+    </script>
+</body>
+</html>

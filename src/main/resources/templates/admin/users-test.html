@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Utilisateurs</title>
+</head>
+<body>
+    <h1>Test Utilisateurs (Template Direct)</h1>
+    <p>Ce template est directement dans le dossier admin/</p>
+    <p>Nombre d'utilisateurs: <span th:text="${#lists.size(users)}">0</span></p>
+    <p>Nombre de rôles: <span th:text="${#lists.size(roles)}">0</span></p>
+    
+    <a href="/admin/dashboard">Retour au Dashboard</a>
+</body>
+</html>

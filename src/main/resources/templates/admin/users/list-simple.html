@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste Utilisateurs Simple</title>
+</head>
+<body>
+    <h1>Liste des Utilisateurs (Version Simple)</h1>
+    <p>Nombre d'utilisateurs: <span th:text="${#lists.size(users)}">0</span></p>
+    <p>Nombre de rôles: <span th:text="${#lists.size(roles)}">0</span></p>
+    
+    <h2>Utilisateurs:</h2>
+    <ul th:if="${!#lists.isEmpty(users)}">
+        <li th:each="user : ${users}" th:text="${user.username}">Username</li>
+    </ul>
+    <p th:if="${#lists.isEmpty(users)}">Aucun utilisateur trouvé</p>
+    
+    <h2>Rôles:</h2>
+    <ul th:if="${!#lists.isEmpty(roles)}">
+        <li th:each="role : ${roles}" th:text="${role.name}">Role</li>
+    </ul>
+    <p th:if="${#lists.isEmpty(roles)}">Aucun rôle trouvé</p>
+    
+    <a href="/admin/dashboard">Retour au Dashboard</a>
+</body>
+</html>

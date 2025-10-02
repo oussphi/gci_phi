@@ -1,0 +1,24 @@
+<!-- src/main/resources/templates/error.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${status} + ' ' + ${error}">An error occurred</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style> body { padding: 2rem; } </style>
+    </head>
+<body class="bg-gray-50">
+    <div class="max-w-2xl mx-auto bg-white shadow p-8 rounded-xl">
+        <h1 class="text-2xl font-bold text-gray-800 mb-2" th:text="${status} + ' ' + ${error}">Error</h1>
+        <p class="text-gray-700 mb-4" th:text="${message}">An unexpected error occurred.</p>
+        <div class="text-sm text-gray-500 mb-6">
+            <div><strong>Path:</strong> <span th:text="${path}">/</span></div>
+            <div th:if="${timestamp}"><strong>Timestamp:</strong> <span th:text="${timestamp}"></span></div>
+        </div>
+        <div class="flex gap-3">
+            <a th:href="@{/dashboard}" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Dashboard</a>
+            <a th:href="@{/login}" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">Login</a>
+        </div>
+    </div>
+</body>
+</html>

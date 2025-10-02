@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>TEST OFFRE</title>
+</head>
+<body>
+    <div th:replace="fragments/header :: body"></div>
+
+<h1>TEST DE RENDU OFFRE</h1>
+<p th:text="'Offre sélectionnée: ' + ${offreSelectionnee.nom}"></p>
+<p th:text="'Nb produits: ' + ${produits.size()}"></p>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Liste des Pharmacies</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        function filtrerPharmacies() {
+            const secteurFiltre = document.getElementById('secteurFilter').value.toLowerCase();
+            const rechercheNom = document.getElementById('searchInput').value.toLowerCase();
+
+            document.querySelectorAll('#pharmaciesTable tbody tr').forEach(row => {
+                const nom = row.querySelector('.ph-nom').textContent.toLowerCase();
+                const secteur = row.querySelector('.ph-secteur').textContent.toLowerCase();
+
+                const matchSecteur = secteurFiltre === "" || secteur.includes(secteurFiltre);
+                const matchNom = nom.includes(rechercheNom);
+
+                row.style.display = (matchSecteur && matchNom) ? '' : 'none';
+            });
+        }
+    </script>
+</head>
+<body class="bg-gray-100 p-6">
+    <div th:replace="fragments/header :: body"></div>
+
+    <div class="max-w-6xl mx-auto bg-white p-6 rounded shadow">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-indigo-700">Pharmacies</h2>
+            <a th:href="@{/DSM/pharmacies/nouvelle}" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+                Ajouter une pharmacie
+            </a>
+            <a th:href="@{/DSM/pharmacies/import}" class="bg-indigo-100 text-indigo-800 px-4 py-2 rounded hover:bg-indigo-200">
+                Importer Excel
+              </a>
+              
+        </div>
+
+        <!-- Barre de filtre -->
+        <div class="flex flex-wrap items-center gap-4 mb-6">
+            <div>
+                <label for="secteurFilter" class="block text-sm font-medium text-gray-700">Filtrer par Secteur</label>
+                <select id="secteurFilter" onchange="filtrerPharmacies()" class="mt-1 block w-52 border-gray-300 rounded shadow-sm">
+                    <option value="">Tous les secteurs</option>
+                    <option th:each="sect : ${secteurs}" th:value="${sect.nom}" th:text="${sect.nom}"></option>
+                </select>
+            </div>
+
+            <div>
+                <label for="searchInput" class="block text-sm font-medium text-gray-700">Rechercher par nom</label>
+                <input type="text" id="searchInput" oninput="filtrerPharmacies()" placeholder="Entrer un nom..."
+                       class="mt-1 block w-64 px-3 py-2 border border-gray-300 rounded shadow-sm" />
+            </div>
+        </div>
+
+        <!-- Tableau des pharmacies -->
+        <div th:if="${pharmacies.isEmpty()}" class="text-gray-600">Aucune pharmacie enregistrée.</div>
+
+        <table id="pharmaciesTable" th:if="${!pharmacies.isEmpty()}" class="min-w-full border text-sm">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="border px-4 py-2 text-left">Nom</th>
+                    <th class="border px-4 py-2 text-left">Adresse</th>
+                    <th class="border px-4 py-2 text-left">Téléphone</th>
+                    <th class="border px-4 py-2 text-left">Secteur</th>
+                    <th class="border px-4 py-2 text-left">Payée ?</th>
+                    <th class="border px-4 py-2 text-left">ICE</th>
+                    <th class="border px-4 py-2 text-left">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="ph : ${pharmacies}" class="border-t">
+                    <td class="border px-4 py-2 ph-nom" th:text="${ph.nom}">Nom</td>
+                    <td class="border px-4 py-2" th:text="${ph.adresse}">Adresse</td>
+                    <td class="border px-4 py-2" th:text="${ph.telephone}">Téléphone</td>
+                    <td class="border px-4 py-2 ph-secteur" th:text="${ph.secteur?.nom} ?: '-'">Secteur</td>
+                    <td class="border px-4 py-2" th:text="${ph.payed ? 'Oui' : 'Non'}">Oui</td>
+                    <td class="border px-4 py-2" th:text="${ph.ice}">ICE</td>
+                    <td class="border px-4 py-2">
+                        <a th:href="@{'/DSM/pharmacies/edit/' + ${ph.id}}" class="text-blue-600 hover:underline">Modifier</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

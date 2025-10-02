@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <style>
+        .dashboard-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .client-section { background-color: #e6f7ff; }
+        .DSM-section { background-color: #e6ffe6; }
+        .grossiste-section { background-color: #fff2e6; }
+        .usine-section { background-color: #f9e6ff; }
+    </style>
+</head>
+<body>
+<h1 th:text="'Welcome, ' + ${username} + '!'">Welcome!</h1>
+<form th:action="@{/perform_logout}" method="post" style="display:inline">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <button type="submit">Logout</button>
+    </form>
+
+<div th:switch="${role}">
+    <!-- Client Dashboard -->
+    <div th:case="'ROLE_CLIENT'" class="dashboard-section client-section">
+        <h2>Client Dashboard</h2>
+        <p>Your orders, prescriptions, etc.</p>
+        <!-- Add more client-specific content here -->
+    </div>
+
+    <!-- DSM Dashboard -->
+    <div th:case="'ROLE_DSM'" class="dashboard-section DSM-section">
+        <h2>DSM Dashboard</h2>
+        <p>Stock, orders, customer requests...</p>
+        <!-- Add more DSM-specific content here -->
+    </div>
+
+    <!-- Grossiste Dashboard -->
+    <div th:case="'ROLE_GROSSISTE'" class="dashboard-section grossiste-section">
+        <h2>Grossiste Dashboard</h2>
+        <p>Warehouse management, orders, logistics...</p>
+        <!-- Add more grossiste-specific content here -->
+    </div>
+
+    <!-- Usine Dashboard -->
+    <div th:case="'ROLE_USINE'" class="dashboard-section usine-section">
+        <h2>Usine Dashboard</h2>
+        <p>Production statistics, supply chain data...</p>
+        <!-- Add more usine-specific content here -->
+    </div>
+
+    <!-- Default case for unknown roles -->
+    <div th:case="*" class="dashboard-section">
+        <h2>Unknown Role</h2>
+        <p>No dashboard configuration found for your role.</p>
+    </div>
+</div>
+</body>
+</html>

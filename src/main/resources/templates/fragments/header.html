@@ -1,0 +1,180 @@
+<!-- fragments/header.html (Thymeleaf fragments only, no html/head/body wrappers) -->
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="headMeta">
+    <meta charset="UTF-8" />
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+</th:block>
+
+<header xmlns:th="http://www.thymeleaf.org" th:fragment="body" class="sticky top-0 z-50" th:attr="data-user-id=${currentUserId}">
+    <!-- Liseré dégradé -->
+    <div class="h-0.5 w-full bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-cyan-500"></div>
+
+    <!-- Barre principale -->
+    <div class="bg-white/80 backdrop-blur-xl border-b border-gray-200/70 shadow-sm">
+        <div class="mx-auto max-w-screen-2xl px-4">
+            <div class="flex h-16 items-center justify-between gap-4">
+                <!-- Logo + marque -->
+                <a th:href="@{/dashboard}" class="group flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-xl">
+                    <img th:src="@{/images/logo4.png}" alt="Logo" class="h-9 w-auto transition-transform duration-300 group-hover:scale-[1.02]">
+                    <span class="hidden sm:inline-block text-base font-semibold tracking-tight text-gray-900">
+                        <span class="bg-gradient-to-r from-indigo-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent">GCI</span>
+                    </span>
+                </a>
+
+                <!-- Infos utilisateur (optionnel si dispo) -->
+                <div class="hidden md:flex items-center gap-2 min-w-0" th:if="${username}">
+                    <span class="truncate max-w-[12rem] text-sm text-gray-600">Bonjour, <span class="font-semibold text-gray-900">[[${username}]]</span></span>
+                    <span class="hidden lg:inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 ring-1 ring-indigo-100"
+                          th:if="${role}">
+                        Rôle :
+                        <span class="ml-1 font-semibold"
+                              th:text="${#strings.equalsIgnoreCase(role,'ROLE_CLIENT') ? 'Délégué Pharmaceutique' :
+                                         (#strings.equalsIgnoreCase(role,'DSM') ? 'BU commercial' :
+                                         ((#strings.equalsIgnoreCase(role,'admin') or #strings.equalsIgnoreCase(role,'ROLE_ADMIN')) ? 'admin' : role))}">VM</span>
+                    </span>
+                </div>
+
+                <!-- Actions à droite (desktop) -->
+                <div class="hidden sm:flex items-center gap-3">
+                    <!-- Bouton Retour -->
+                    <button type="button"
+                            class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:border-indigo-200 hover:text-indigo-700 hover:shadow transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                            onclick="history.back()" aria-label="Revenir à la page précédente">
+                        <!-- Icône flèche -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M10.828 12 16.192 6.636a1 1 0 0 0-1.414-1.414L8 12l6.778 6.778a1 1 0 1 0 1.414-1.414z"/>
+                        </svg>
+                        <span>Retour</span>
+                    </button>
+
+                    <!-- Dropdown notifications via <details>/<summary> (pas de JS requis) -->
+                    <details class="relative" id="notifWrapper" th:with="uc=${unreadCount}, nb=${notifBase != null ? notifBase : '/DSM'}">
+                        <summary id="notifBtn" class="relative inline-flex items-center text-slate-600 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-lg p-2 select-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2a7 7 0 00-7 7v3.586l-1.707 1.707A1 1 0 004 16h16a1 1 0 00.707-1.707L19 12.586V9a7 7 0 00-7-7zm0 20a3 3 0 002.995-2.824L15 19h-6a3 3 0 002.824 2.995L12 22z"/>
+                            </svg>
+                            <span th:if="${uc != null and uc > 0}" class="absolute -top-1 -right-1 inline-flex items-center justify-center rounded-full bg-red-600 text-white text-[10px] px-1.5 py-0.5" th:text="${uc}">0</span>
+                        </summary>
+                        <!-- Panel déroulant -->
+                        <div id="notifPanel" class="notif-panel absolute right-0 mt-2 w-80 max-h-96 overflow-auto rounded-xl border border-gray-200 bg-white shadow-lg z-50">
+                            <div class="px-4 py-2 border-b border-gray-100 text-xs uppercase tracking-wide text-gray-500">Notifications</div>
+                            <div th:if="${latestNotifications == null or #lists.isEmpty(latestNotifications)}" class="p-4 text-sm text-gray-500">Aucune notification</div>
+                            <ul class="divide-y divide-gray-100" th:if="${latestNotifications != null and not #lists.isEmpty(latestNotifications)}">
+                                <li th:each="n : ${latestNotifications}" class="p-3 hover:bg-gray-50">
+                                    <a th:href="@{${nb} + '/notifications/' + ${n.id} + '/open'}" class="block">
+                                        <div class="flex items-start gap-2">
+                                            <div class="mt-0.5 h-2 w-2 rounded-full" th:classappend="${n.readFlag} ? 'bg-gray-300' : 'bg-indigo-600'"></div>
+                                            <div class="min-w-0">
+                                                <div class="text-sm font-semibold text-gray-900 truncate" th:text="${n.title}">Titre</div>
+                                                <div class="text-xs text-gray-600 truncate" th:text="${n.message}">Message</div>
+                                                <div class="text-[10px] text-gray-400 mt-0.5" th:text="${#temporals.format(n.createdAt, 'dd/MM/yyyy HH:mm')}">date</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                            </ul>
+                            <div class="px-3 py-2 border-t border-gray-100 text-right">
+                                <a th:href="@{${nb} + '/notifications'}" class="text-xs text-indigo-600 hover:underline">Voir tout</a>
+                            </div>
+                        </div>
+                    </details>
+
+                    <!-- Déconnexion (POST avec CSRF) -->
+                    <form th:action="@{/perform_logout}" method="post" class="inline">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit"
+                           class="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-600 shadow-sm hover:bg-red-50 hover:shadow transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                           aria-label="Se déconnecter">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2a1 1 0 0 0-1 1v8a1 1 0 1 0 2 0V3a1 1 0 0 0-1-1zM6.343 5.757a1 1 0 0 0-1.414 1.414 8 8 0 1 0 11.314 0 1 1 0 0 0-1.414-1.414 6 6 0 1 1-8.486 0z"/>
+                            </svg>
+                            <span>Se déconnecter</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Bouton mobile (hamburger) -->
+                <button type="button" class="sm:hidden inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white p-2 text-gray-700 shadow-sm hover:border-indigo-200 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                        aria-controls="mobileMenu" aria-expanded="false" id="menuToggle">
+                    <span class="sr-only">Ouvrir le menu</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Menu mobile -->
+        <div id="mobileMenu" class="sm:hidden hidden border-t border-gray-200/70 bg-white/95 backdrop-blur">
+            <div class="px-4 py-3 space-y-2">
+                <button type="button" class="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:border-indigo-200 hover:text-indigo-700 hover:shadow transition"
+                        onclick="history.back()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M10.828 12 16.192 6.636a1 1 0 0 0-1.414-1.414L8 12l6.778 6.778a1 1 0 1 0 1.414-1.414z"/>
+                    </svg>
+                    Retour
+                </button>
+                <form th:action="@{/perform_logout}" method="post" class="w-full inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit"
+                       class="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-600 shadow-sm hover:bg-red-50 hover:shadow transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2a1 1 0 0 0-1 1v8a1 1 0 1 0 2 0V3a1 1 0 0 0-1-1zM6.343 5.757a1 1 0 0 0-1.414 1.414 8 8 0 1 0 11.314 0 1 1 0 0 0-1.414-1.414 6 6 0 1 1-8.486 0z"/>
+                        </svg>
+                        Se déconnecter
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="h-px w-full bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+</header>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script>
+    // Styles pour le dropdown <details> (sans JS)
+    (function(){
+        const css = `details#notifWrapper summary{list-style:none;cursor:pointer}details#notifWrapper summary::-webkit-details-marker{display:none}details#notifWrapper .notif-panel{display:none}details#notifWrapper[open] .notif-panel{display:block}`;
+        const s = document.createElement('style'); s.textContent = css; document.head.appendChild(s);
+    })();
+    // Toggle du menu mobile
+    (function () {
+        const toggle = document.getElementById('menuToggle');
+        const menu = document.getElementById('mobileMenu');
+        if (toggle && menu) {
+            toggle.addEventListener('click', () => {
+                const isOpen = menu.classList.toggle('hidden') === false;
+                toggle.setAttribute('aria-expanded', String(isOpen));
+            });
+        }
+    })();
+
+    // WebSocket notifications (STOMP)
+    (function() {
+        var headerEl = document.querySelector('header[th\\:fragment], header[data-user-id]');
+        if (!headerEl) headerEl = document.querySelector('header');
+        var userId = headerEl ? headerEl.getAttribute('data-user-id') : null;
+        if (!userId || typeof SockJS === 'undefined' || typeof Stomp === 'undefined') return;
+        try {
+            var sock = new SockJS('/ws');
+            var client = Stomp.over(sock);
+            client.debug = function(){}; // disable logs
+            client.connect({}, function() {
+                client.subscribe('/topic/notifications/' + userId, function(msg) {
+                    try {
+                        var data = JSON.parse(msg.body);
+                        // Update badge if present
+                        var badge = document.querySelector('#notifBtn span');
+                        if (badge) {
+                            var val = parseInt(badge.textContent || '0', 10) || 0;
+                            badge.textContent = String(val + 1);
+                            badge.classList.remove('hidden');
+                        }
+                    } catch(e){}
+                });
+            });
+        } catch (e) {}
+    })();
+</script>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Détails de l'offre</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <th:block th:replace="fragments/header :: headMeta"></th:block>
+
+  <!-- Tom Select (recherche + dropdown stylé) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css">
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+  <script>
+    function calculerTotal() {
+      let total = 0;
+      document.querySelectorAll('.ligne-produit').forEach(row => {
+        const prixEl = row.querySelector('.prix');
+        const remiseEl = row.querySelector('.remise');
+        const prix = parseFloat(prixEl?.dataset.value || '0');
+        const remise = parseFloat(remiseEl?.dataset.value || '0');
+        const qte = parseInt(row.querySelector('.quantite')?.value || '0', 10);
+        const prixRemise = prix - (prix * remise / 100);
+        total += prixRemise * qte;
+      });
+
+      const conditionPaiement = document.querySelector("select[name='conditionPaiement']").value;
+      let reduction = 0;
+      let totalNet = total;
+
+      if (conditionPaiement === "AU COMPTANT" || conditionPaiement === "AU COMPTANT SE") {
+        reduction = total * 0.02;
+        totalNet = total - reduction;
+      }
+
+      document.getElementById('totalBrut').textContent = total.toFixed(2) + ' DH';
+      document.getElementById('remisePaiement').textContent =
+        reduction > 0 ? "- " + reduction.toFixed(2) + ' DH (2%)' : "- 0.00 DH";
+      document.getElementById('totalCommande').textContent = totalNet.toFixed(2) + ' DH';
+    }
+
+    /* === Filtrage pharmacies (compatible Tom Select) === */
+    let tsSecteur, tsPharmacy;
+    let PHARM_ALL_OPTS = [];
+
+    function filtrerPharmacies() {
+      const secteurSelectEl = document.getElementById("secteurSelect");
+      const selectedSecteurId =
+        (tsSecteur && tsSecteur.getValue()) || (secteurSelectEl ? secteurSelectEl.value : '') || '';
+
+      // Si Tom Select est actif pour Pharmacie
+      if (tsPharmacy) {
+        const keep = PHARM_ALL_OPTS.filter(o =>
+          !selectedSecteurId || o.value === '' || o.secteurId === selectedSecteurId
+        );
+
+        const current = tsPharmacy.getValue();
+
+        tsPharmacy.clearOptions();
+        tsPharmacy.addOptions(keep);
+        tsPharmacy.refreshOptions(false);
+
+        if (current && keep.some(o => o.value === current && !o.disabled)) {
+          tsPharmacy.setValue(current, true);
+        } else {
+          tsPharmacy.clear(true);
+        }
+        return;
+      }
+
+      // Fallback (sans Tom Select) — cas peu probable ici
+      const pharmacyOptions = document.querySelectorAll("#pharmacySelect option");
+      pharmacyOptions.forEach(option => {
+        const secteurId = option.getAttribute("data-secteur-id");
+        const shouldShow = !selectedSecteurId || secteurId === selectedSecteurId || option.value === "";
+        option.style.display = shouldShow ? "block" : "none";
+      });
+      const pharmacySelect = document.getElementById("pharmacySelect");
+      const checked = pharmacySelect.querySelector("option:checked");
+      if (checked && (checked.style.display === "none")) {
+        pharmacySelect.value = "";
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-gray-100 p-6">
+<div th:replace="fragments/header :: body"></div>
+
+<div class="max-w-6xl mx-auto bg-white shadow-md rounded-xl p-8">
+  <h1 class="text-3xl font-bold text-indigo-700 mb-6">Commande pour Offre :
+    <span th:text="${offreSelectionnee.nom}"></span>
+  </h1>
+
+  <p class="text-gray-700 mb-2" th:text="${offreSelectionnee.description}"></p>
+  <p class="mb-2"><strong>Période :</strong>
+    <span th:text="${#temporals.format(offreSelectionnee.dateDebut, 'dd/MM/yyyy')}"></span>
+    à
+    <span th:text="${#temporals.format(offreSelectionnee.dateFin, 'dd/MM/yyyy')}"></span>
+  </p>
+
+  <form th:action="@{/client/previewCommande}" method="post" oninput="calculerTotal()">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <input type="hidden" name="offreId" th:value="${offreSelectionnee.id}" />
+
+    <!-- Secteur (recherchable) -->
+    <div class="mb-4">
+      <label for="secteurSelect" class="block text-gray-700 font-medium mb-2">Secteur :</label>
+      <select id="secteurSelect" class="w-full border border-gray-300 rounded px-4 py-2" onchange="filtrerPharmacies()">
+        <option value="">-- Tous les secteurs --</option>
+        <option th:each="secteur : ${secteurs}" th:value="${secteur.id}" th:text="${secteur.nom}"></option>
+      </select>
+    </div>
+
+    <!-- Pharmacie (recherchable + filtrée par secteur) -->
+    <div class="mb-4">
+      <label for="pharmacySelect" class="block text-gray-700 font-medium mb-2">Pharmacie :</label>
+      <select id="pharmacySelect" name="pharmacyId"
+              class="w-full border border-gray-300 rounded px-4 py-2" required>
+        <option value="">-- Choisir une pharmacie --</option>
+        <option th:each="ph : ${pharmacies}"
+                th:value="${ph.id}"
+                th:data-secteur-id="${ph.secteur?.id}"
+                th:text="${ph.payed} ? ${ph.nom} : ${ph.nom + ' (non payée)'}"
+                th:disabled="${!ph.payed}"
+                th:style="${!ph.payed} ? 'color:gray;' : ''">
+        </option>
+      </select>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm text-left border border-gray-300">
+        <thead class="bg-gray-100">
+        <tr>
+          <th class="p-2 border">Produit</th>
+          <th class="p-2 border">Prix (DH)</th>
+          <th class="p-2 border">Remise %</th>
+          <th class="p-2 border">Min</th>
+          <th class="p-2 border">Max</th>
+          <th class="p-2 border">Colisage</th>
+          <th class="p-2 border">Quantité</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${produits}" class="ligne-produit hover:bg-gray-50">
+          <td class="p-2 border" th:text="${p.produit?.nom ?: 'Produit manquant'}"></td>
+          <td class="p-2 border">
+            <span class="prix" th:attr="data-value=${p.prix}" th:text="${#numbers.formatDecimal(p.prix, 1, 2)}"></span>
+          </td>
+          <td class="p-2 border">
+            <span class="remise" th:attr="data-value=${p.remisePourcent}" th:text="${p.remisePourcent}"></span>
+          </td>
+          <td class="p-2 border" th:text="${p.quantiteMin}"></td>
+          <td class="p-2 border" th:text="${p.quantiteMax}"></td>
+          <td class="p-2 border" th:text="${p.colisage}">-</td>
+          <td class="p-2 border">
+            <input type="number"
+                   th:name="${'quantite_' + (p.produit?.id ?: 0)}"
+                   class="quantite w-full border border-gray-300 rounded px-2 py-1"
+                   min="0"
+                   placeholder="0" />
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Totaux -->
+    <div class="mt-4 text-right text-lg font-semibold text-gray-700">
+      Total brut : <span id="totalBrut" class="text-gray-600">0 DH</span><br>
+      Remise paiement : <span id="remisePaiement" class="text-red-600">- 0.00 DH</span><br>
+      Total estimé : <span id="totalCommande" class="text-indigo-600">0 DH</span>
+    </div>
+
+    <div class="mb-4 mt-4">
+      <!-- Condition de Paiement -->
+      <label class="block text-sm">Condition de Paiement</label>
+      <select name="conditionPaiement" required class="w-full border rounded px-3 py-2 mb-4"
+              onchange="calculerTotal()">
+        <option value="">-- Choisir --</option>
+        <option>30 Jours</option>
+        <option>45 Jours</option>
+        <option>60 Jours</option>
+        <option>75 Jours</option>
+        <option>90 Jours</option>
+        <option>120 Jours</option>
+        <option>180 Jours</option>
+        <option>AU COMPTANT</option>
+        <option>AU COMPTANT SE</option>
+      </select>
+
+      <!-- Type de Règlement -->
+      <label class="block text-sm">Type de Règlement</label>
+      <select name="typeReglement" required class="w-full border rounded px-3 py-2 mb-4">
+        <option value="">-- Choisir --</option>
+        <option>Traite</option>
+        <option>Chéque</option>
+        <option>Espéce</option>
+        <option>Virement</option>
+      </select>
+
+      <!-- Consignes -->
+      <label class="block text-sm">Consignes</label>
+      <textarea name="consignes" rows="4" class="w-full border rounded px-3 py-2 mb-4"
+                placeholder="Ajouter des consignes éventuelles..."></textarea>
+    </div>
+
+    <div class="mt-6 text-right">
+      <button type="submit"
+              class="bg-indigo-600 text-white px-5 py-2 rounded hover:bg-indigo-700 transition">
+        Passer la commande
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Styles Tom Select (look proche de ta PJ) -->
+<style>
+  .ts-control{ border-radius:.375rem; border-color:#d1d5db; padding:.5rem .75rem; }
+  .ts-control:focus{ outline:none; box-shadow:0 0 0 2px rgba(79,70,229,.35); border-color:#4f46e5; }
+  .ts-dropdown{ border-color:#d1d5db; box-shadow:0 10px 15px rgba(0,0,0,.1); }
+  .ts-dropdown .option{ padding:.5rem .75rem; }
+  .ts-dropdown .active{ background:#3578e5; color:#fff; }    /* bleu sélection */
+  .ts-dropdown .ts-dropdown-content{ max-height:16rem; }
+  .ts-dropdown .option[aria-disabled="true"]{ color:#9ca3af; cursor:not-allowed; } /* non payée */
+</style>
+
+<!-- Init Tom Select + 1er filtrage -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Sauvegarder toutes les pharmacies depuis le DOM initial
+    PHARM_ALL_OPTS = Array.from(document.querySelectorAll('#pharmacySelect option')).map(o => ({
+      value: o.value,
+      text: o.textContent.trim(),
+      secteurId: o.getAttribute('data-secteur-id') || '',
+      disabled: o.disabled || false
+    }));
+
+    // Secteur (recherchable)
+    tsSecteur = new TomSelect('#secteurSelect', {
+      create: false,
+      allowEmptyOption: true,
+      placeholder: 'Rechercher…',
+      onChange(){ filtrerPharmacies(); }
+    });
+
+    // Pharmacie (recherchable)
+    tsPharmacy = new TomSelect('#pharmacySelect', {
+      create: false,
+      allowEmptyOption: true,
+      placeholder: 'Rechercher…'
+    });
+
+    // Premier filtrage (selon la sélection par défaut du secteur)
+    filtrerPharmacies();
+  });
+</script>
+
+</body>
+</html>

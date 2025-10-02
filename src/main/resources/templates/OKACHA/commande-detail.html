@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Détails commande</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <th:block th:replace="fragments/header :: headMeta"></th:block>
+  <!-- Vue retiré: implémentation JS légère pour robustesse d'affichage -->
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <div th:replace="fragments/header :: body"></div>
+
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+      <a th:href="@{/OKACHA/commandes}" class="inline-flex items-center text-sm text-slate-600 hover:text-slate-800">
+        ← Retour à la liste
+      </a>
+      <h1 class="mt-2 text-2xl font-semibold text-slate-800">
+        Commande #<span th:text="${cmd.id}">0</span>
+      </h1>
+      <p class="text-sm text-slate-500">
+        Statut:
+        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-slate-50 text-slate-700 ring-slate-200"
+              th:text="${cmd.status}">-</span>
+      </p>
+    </div>
+
+    <!-- Informations -->
+    <section class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 p-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h2 class="text-sm font-semibold text-slate-600 mb-2">Informations générales</h2>
+          <dl class="text-sm text-slate-700 space-y-1">
+            <div class="flex justify-between"><dt class="text-slate-500">Date</dt><dd th:text="${cmd.dateCommande != null ? #temporals.format(cmd.dateCommande, 'yyyy-MM-dd HH:mm') : '-'}"></dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">VM</dt><dd th:text="${cmd.user != null ? cmd.user.username : '-'}"></dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">Offre</dt><dd th:text="${cmd.offre != null ? cmd.offre.nom : '-'}"></dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">Condition paiement</dt><dd th:text="${cmd.conditionPaiement}">-</dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">Type règlement</dt><dd th:text="${cmd.typeReglement}">-</dd></div>
+          </dl>
+        </div>
+        <div>
+          <h2 class="text-sm font-semibold text-slate-600 mb-2">Pharmacie</h2>
+          <dl class="text-sm text-slate-700 space-y-1">
+            <div class="flex justify-between"><dt class="text-slate-500">Nom</dt><dd th:text="${cmd.pharmacy != null ? cmd.pharmacy.nom : '-'}"></dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">ICE</dt><dd th:text="${cmd.pharmacy != null ? cmd.pharmacy.ice : '-'}"></dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">Secteur</dt><dd th:text="${cmd.pharmacy != null && cmd.pharmacy.secteur != null ? cmd.pharmacy.secteur.nom : '-'}"></dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lignes (Vue) -->
+    <section id="commandeApp" class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 overflow-hidden">
+      <div class="px-4 sm:px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+        <h2 class="text-sm font-semibold text-slate-700">Détails des produits</h2>
+        <div class="text-xs text-slate-500">Cochez les produits en stock</div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="text-xs uppercase text-slate-600 bg-slate-50">
+            <tr>
+              <th class="px-4 sm:px-6 py-3">Inclure</th>
+              <th class="px-4 sm:px-6 py-3">Produit</th>
+              <th class="px-4 sm:px-6 py-3">Quantité</th>
+              <th class="px-4 sm:px-6 py-3">PU (DH)</th>
+              <th class="px-4 sm:px-6 py-3">Total (DH)</th>
+            </tr>
+          </thead>
+          <tbody class="text-sm text-slate-700">
+            <tr th:if="${#lists.isEmpty(lignes)}">
+              <td colspan="5" class="px-6 py-12 text-center text-slate-500">Aucune ligne de commande</td>
+            </tr>
+            <tr th:each="l : ${lignes}"
+                class="odd:bg-white even:bg-slate-50"
+                th:classappend="${l.rupture} ? ' opacity-50' : ''"
+                th:attr="data-row-id=${l.id}">
+              <td class="px-4 sm:px-6 py-3">
+                <input type="checkbox" class="js-line h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                       th:attr="data-id=${l.id},data-nom=${l.produitNom},data-quantite=${l.quantite},data-pu=${l.prixUnitaire},data-rupt=${l.rupture}"
+                       th:checked="${!l.rupture}" />
+              </td>
+              <td class="px-4 sm:px-6 py-3">
+                <span th:text="${l.produitNom}">-</span>
+                <span class="ml-2 text-xs text-amber-700 bg-amber-100 border border-amber-200 rounded px-2 py-0.5"
+                      th:if="${l.rupture}">Rupture de stock</span>
+              </td>
+              <td class="px-4 sm:px-6 py-3" th:text="${l.quantite}">0</td>
+              <td class="px-4 sm:px-6 py-3" th:text="${#numbers.formatDecimal(l.prixUnitaire, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+              <td class="px-4 sm:px-6 py-3" th:text="${#numbers.formatDecimal(l.prixUnitaire * l.quantite, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="bg-slate-50 text-slate-800 font-medium">
+              <td class="px-4 sm:px-6 py-3" colspan="3">Total actuel (DB)</td>
+              <td class="px-4 sm:px-6 py-3" colspan="2" th:text="${#numbers.formatDecimal(cmd.totalPrix, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+            </tr>
+            <tr class="bg-amber-50 text-amber-800 font-semibold">
+              <td class="px-4 sm:px-6 py-3" colspan="3">Nouveau total (simulation)</td>
+              <td class="px-4 sm:px-6 py-3" colspan="2"><span id="simTotal">0.00</span></td>
+            </tr>
+            <tr th:if="${cmd.totalAvantModification != null}">
+              <td class="px-4 sm:px-6 py-3 text-slate-500" colspan="3">Dernière modification: avant → après</td>
+              <td class="px-4 sm:px-6 py-3 text-slate-600" colspan="2">
+                <span th:text="${#numbers.formatDecimal(cmd.totalAvantModification, 1, 'COMMA', 2, 'POINT')}">0</span>
+                →
+                <span th:text="${#numbers.formatDecimal(cmd.totalApresModification, 1, 'COMMA', 2, 'POINT')}">0</span>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="px-4 sm:px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+        <div class="text-sm text-slate-600">Sélectionnés: <span id="selCount">0</span> / <span id="totalCount" th:text="${#lists.size(lignes)}">0</span></div>
+        <button id="saveBtn" class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 text-white px-4 py-2 text-sm font-semibold disabled:opacity-50">
+          <svg id="saveSpin" style="display:none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10h-2a8 8 0 1 1-8-8V2z"/></svg>
+          <span>Enregistrer les modifications</span>
+        </button>
+      </div>
+    </section>
+
+    <script th:inline="javascript">
+      // Collecte des lignes depuis le DOM
+      (function(){
+        const fmt = v => new Intl.NumberFormat('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(v);
+        const cmdId = /*[[${cmd.id}]]*/ 0;
+        const checkboxes = Array.from(document.querySelectorAll('.js-line'));
+        const totalEl = document.getElementById('simTotal');
+        const selCountEl = document.getElementById('selCount');
+        const totalCount = document.getElementById('totalCount');
+        const saveBtn = document.getElementById('saveBtn');
+        const saveSpin = document.getElementById('saveSpin');
+
+        function compute() {
+          let sum = 0; let count = 0;
+          for (const cb of checkboxes) {
+            const tr = cb.closest('tr');
+            if (cb.checked) {
+              count++;
+              const q = Number(cb.getAttribute('data-quantite')) || 0;
+              const pu = Number(cb.getAttribute('data-pu')) || 0;
+              sum += q * pu;
+              if (tr) tr.classList.remove('opacity-50');
+            } else {
+              if (tr) tr.classList.add('opacity-50');
+            }
+          }
+          selCountEl.textContent = String(count);
+          totalEl.textContent = fmt(Math.round(sum * 100) / 100);
+          if (count === 0) saveBtn.setAttribute('disabled', 'disabled'); else saveBtn.removeAttribute('disabled');
+        }
+
+        checkboxes.forEach(cb => cb.addEventListener('change', compute));
+        compute();
+
+        saveBtn.addEventListener('click', async function(){
+          const ids = checkboxes.filter(cb => cb.checked).map(cb => Number(cb.getAttribute('data-id')));
+          if (ids.length === 0) return;
+          saveBtn.setAttribute('disabled', 'disabled');
+          if (saveSpin) saveSpin.style.display = '';
+          try {
+            const tokenMeta = document.querySelector('meta[name="_csrf"]');
+            const headerMeta = document.querySelector('meta[name="_csrf_header"]');
+            const headers = { 'Content-Type': 'application/json' };
+            if (tokenMeta && headerMeta) headers[headerMeta.getAttribute('content')] = tokenMeta.getAttribute('content');
+            const resp = await fetch(`/OKACHA/commandes/${cmdId}/modifier`, {
+              method: 'POST', headers, body: JSON.stringify({ selectedLineIds: ids })
+            });
+            const data = await resp.json().catch(() => ({}));
+            if (!resp.ok) throw new Error(data.error || 'Erreur');
+            window.location.reload();
+          } catch(e) {
+            alert(e.message || 'Échec de la sauvegarde');
+          } finally {
+            if (saveSpin) saveSpin.style.display = 'none';
+            saveBtn.removeAttribute('disabled');
+          }
+        });
+      })();
+    </script>
+  </main>
+</body>
+</html> 

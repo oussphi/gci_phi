@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Pharmacie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        function filterSecteurs() {
+            const input = document.getElementById("secteurSearch");
+            const filter = input.value.toLowerCase();
+            const select = document.getElementById("secteurDropdown");
+            const options = select.options;
+
+            for (let i = 0; i < options.length; i++) {
+                const txt = options[i].text.toLowerCase();
+                const isMatch = txt.includes(filter);
+                options[i].style.display = isMatch || i === 0 ? "" : "none";
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 p-6">
+    <div th:replace="fragments/header :: body"></div>
+
+<div class="max-w-xl mx-auto bg-white p-6 rounded shadow">
+    <h2 class="text-2xl font-bold text-indigo-700 mb-4"
+        th:text="${pharmacy.id != null} ? 'Modifier la pharmacie' : 'Créer une pharmacie'"></h2>
+
+    <form th:action="${pharmacy.id != null} ? @{'/DSM/pharmacies/edit/' + ${pharmacy.id}} : @{/DSM/pharmacies}"
+          th:object="${pharmacy}" method="post" class="space-y-4">
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Nom</label>
+            <input type="text" th:field="*{nom}" required class="w-full border rounded px-3 py-2"/>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Adresse</label>
+            <input type="text" th:field="*{adresse}" required class="w-full border rounded px-3 py-2"/>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Téléphone</label>
+            <input type="text" th:field="*{telephone}" required class="w-full border rounded px-3 py-2"/>
+        </div>
+        
+        <div class="mb-4">
+            <label class="block mb-1 font-medium text-gray-700">A payé ?</label>
+            <input type="checkbox" name="payed" th:checked="${pharmacy.payed}" />
+        </div>
+        
+        <div class="mb-4">
+            <label for="ice" class="block text-gray-700 font-bold mb-2">ICE :</label>
+            <input type="text" id="ice" name="ice" th:field="*{ice}"
+                   class="w-full border border-gray-300 rounded px-4 py-2" required />
+        </div>
+        
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Secteur</label>
+            <input type="text" id="secteurSearch" onkeyup="filterSecteurs()" placeholder="Rechercher un secteur..."
+                   class="w-full border rounded px-3 py-2 mb-2">
+
+            <select id="secteurDropdown" name="secteur.id" class="w-full border rounded px-3 py-2" required>
+                <option value="">-- Sélectionner un secteur --</option>
+                <option th:each="secteur : ${secteurs}"
+                        th:value="${secteur.id}"
+                        th:text="${secteur.nom}"
+                        th:selected="${pharmacy.secteur != null and secteur.id == pharmacy.secteur.id}">
+                </option>
+            </select>
+        </div>
+
+        <div class="flex justify-between items-center mt-6">
+            <a th:href="@{/DSM/pharmacies}" class="text-indigo-600 hover:underline">← Retour</a>
+            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                <span th:text="${pharmacy.id != null} ? 'Mettre à jour' : 'Créer'">Créer</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

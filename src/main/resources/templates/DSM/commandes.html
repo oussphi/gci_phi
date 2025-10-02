@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DSM - Commandes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <!-- Header fragment -->
+  <div th:replace="fragments/header :: body"></div>
+
+  <main class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Page header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-slate-900">Gestion des Commandes</h1>
+          <p class="mt-2 text-lg text-slate-600">Suivez les commandes et accédez aux détails</p>
+        </div>
+        <div class="hidden sm:flex items-center gap-2 text-sm text-slate-500 bg-white px-3 py-2 rounded-lg border border-slate-200">
+          <span class="h-2 w-2 rounded-full bg-indigo-500"></span>
+          Interface DSM
+        </div>
+      </div>
+      <div class="mt-4">
+        <a th:href="@{/DSM/commandes/nouvelle}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700">Nouvelle commande</a>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div th:if="${error}" class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-800">
+      <div class="font-medium" th:text="${error}">Une erreur est survenue.</div>
+    </div>
+    <div th:if="${success}" class="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
+      <div class="font-medium" th:text="${success}">Opération effectuée avec succès.</div>
+    </div>
+
+    <!-- Filtres -->
+    <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+      <h3 class="text-lg font-semibold text-slate-900 mb-4">Filtres</h3>
+      <form method="get" th:action="@{/DSM/commandes}" class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-8">
+        <div>
+          <label class="mb-1 block text-xs font-medium text-slate-700">Date début</label>
+          <input type="date" name="startDate" th:value="${startDate}" class="w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-medium text-slate-700">Date fin</label>
+          <input type="date" name="endDate" th:value="${endDate}" class="w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-medium text-slate-700">Mois</label>
+          <input type="number" min="1" max="12" name="month" th:value="${month}" class="w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-medium text-slate-700">Année</label>
+          <input type="number" name="year" th:value="${year}" class="w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-medium text-slate-700">Filtrer par VM</label>
+          <select name="userId" class="w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <option value="">-- Tous les VM --</option>
+            <option th:each="u : ${utilisateurs}" th:value="${u.id}" th:text="${u.username}" th:selected="${userId != null and u.id == userId}"></option>
+          </select>
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-medium text-slate-700">Statut</label>
+          <select name="status" class="w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <option value="">-- Tous les statuts --</option>
+            <option th:each="s : ${T(com.project.entity.CommandeStatus).values()}"
+                    th:value="${s}"
+                    th:text="${s}"
+                    th:selected="${status != null and s.name() == status.name()}"></option>
+          </select>
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-medium text-slate-700">Taille page</label>
+          <select name="size" class="w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <option th:value="10" th:selected="${size == 10}">10</option>
+            <option th:value="20" th:selected="${size == 20}">20</option>
+            <option th:value="50" th:selected="${size == 50}">50</option>
+            <option th:value="100" th:selected="${size == 100}">100</option>
+          </select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+            Filtrer
+          </button>
+          <a th:href="@{/DSM/commandes}" class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">Réinitialiser</a>
+        </div>
+      </form>
+      <div class="mt-4">
+        <a th:href="@{/DSM/export-commandes}" class="inline-flex items-center justify-center gap-2 rounded-lg border border-green-200 bg-white px-4 py-2 text-sm font-semibold text-green-700 shadow-sm transition hover:bg-green-50">
+          Exporter les commandes
+        </a>
+      </div>
+    </section>
+
+    <!-- Carte liste + stats simples -->
+    <section class="bg-white shadow-sm border border-slate-200 rounded-2xl overflow-hidden">
+      <div class="px-6 py-6 border-b border-slate-200 bg-gradient-to-br from-slate-50 to-white">
+        <div class="flex items-center gap-3">
+          <div class="h-12 w-12 rounded-xl bg-indigo-600/10 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" viewBox="0 0 24 24" fill="currentColor"><path d="M3 7h18v2H3V7zm0 4h12v2H3v-2zm0 4h18v2H3v-2z"/></svg>
+          </div>
+          <div>
+            <h2 class="text-xl font-semibold text-slate-900">Liste des commandes</h2>
+            <p class="text-sm text-slate-600"><span th:text="${commandes != null ? #lists.size(commandes) : 0}">0</span> commande(s) trouvée(s)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table section -->
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">ID</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Date</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">VM</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Pharmacie</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">ICE</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Secteur</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Offre</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Statut</th>
+              <th class="px-6 py-4 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">Total (DH)</th>
+              <th class="px-6 py-4 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">Avant modif</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            <!-- Empty state -->
+            <tr th:if="${#lists.isEmpty(commandes)}">
+              <td colspan="10" class="px-6 py-16 text-center">
+                <div class="mx-auto max-w-sm">
+                  <div class="h-16 w-16 mx-auto rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3V5zm2 4h14v10H5V9zm2 2v6h10v-6H7z"/></svg>
+                  </div>
+                  <h3 class="text-lg font-medium text-slate-900 mb-2">Aucune commande trouvée</h3>
+                  <p class="text-slate-500">Ajustez vos filtres puis réessayez.</p>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Command rows -->
+            <tr th:each="cmd : ${commandes}" class="hover:bg-slate-50 transition-colors duration-150">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <a th:href="@{'/DSM/commandes/' + ${cmd.id}}" class="text-indigo-600 hover:text-indigo-800 font-medium hover:underline" th:text="${cmd.id}">1</a>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900" th:text="${cmd.dateCommande != null ? #temporals.format(cmd.dateCommande, 'dd/MM/yyyy HH:mm') : '-'}">01/08/2025 12:30</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900" th:text="${cmd.user != null ? cmd.user.username : '-'}">vm01</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900" th:text="${cmd.pharmacy != null ? cmd.pharmacy.nom : '-'}">Pharmacie A</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900" th:text="${cmd.pharmacy != null ? cmd.pharmacy.ice : '-'}">XXXXXX</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900" th:text="${cmd.pharmacy != null && cmd.pharmacy.secteur != null ? cmd.pharmacy.secteur.nom : '-'}">Secteur 1</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900" th:text="${cmd.offre != null ? cmd.offre.nom : '-'}">Offre X</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-slate-50 text-slate-700 ring-slate-200" th:text="${cmd.status}">-</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900 text-right" th:text="${#numbers.formatDecimal(cmd.totalPrix, 1, 'COMMA', 2, 'POINT')} + ' DH'">1,234.50 DH</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700 text-right" th:text="${cmd.totalAvantModification != null ? #numbers.formatDecimal(cmd.totalAvantModification, 1, 'COMMA', 2, 'POINT') + ' DH' : '-'}">-</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <a th:href="@{'/DSM/commandes/' + ${cmd.id}}" class="inline-flex items-center rounded-lg bg-indigo-600 px-3 py-2 text-xs font-medium text-white hover:bg-indigo-700">Détails</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Pagination controls -->
+    <section class="mt-4 flex items-center justify-between">
+      <div class="text-sm text-slate-600">
+        Page <span th:text="${page + 1}">1</span> / <span th:text="${totalPages}">1</span>
+        — <span th:text="${totalElements}">0</span> commande(s)
+      </div>
+      <div class="flex items-center gap-2">
+        <a th:if="${hasPrevious}"
+           th:href="@{/DSM/commandes(page=${page - 1}, size=${size}, startDate=${startDate}, endDate=${endDate}, month=${month}, year=${year}, userId=${userId}, status=${status})}"
+           class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50">Précédent</a>
+        <a th:if="${hasNext}"
+           th:href="@{/DSM/commandes(page=${page + 1}, size=${size}, startDate=${startDate}, endDate=${endDate}, month=${month}, year=${year}, userId=${userId}, status=${status})}"
+           class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50">Suivant</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

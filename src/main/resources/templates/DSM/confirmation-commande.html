@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>DSM - Confirmation de Commande</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <th:block th:replace="fragments/header :: headMeta"></th:block>
+</head>
+<body class="bg-gray-50 p-6">
+<div th:replace="fragments/header :: body"></div>
+
+<div class="max-w-4xl mx-auto bg-white shadow-lg p-8 rounded-xl">
+  <h2 class="text-2xl font-bold text-gray-800 mb-6">Confirmation de la commande</h2>
+
+  <p class="mb-2"><strong>VM :</strong> <span th:text="${vm.username}"></span></p>
+  <p class="mb-2"><strong>Pharmacie :</strong> <span th:text="${pharmacy.nom}"></span></p>
+  <p class="mb-2"><strong>Offre :</strong> <span th:text="${offre.nom}"></span></p>
+  <p class="mb-4"><strong>Total :</strong> <span th:text="${totalPrix} + ' DH'"></span> |
+    <strong>Quantité Totale :</strong> <span th:text="${totalQuantite}"></span></p>
+  <p><strong>Condition de Paiement :</strong> <span th:text="${conditionPaiement}"></span></p>
+  <p><strong>Type de Règlement :</strong> <span th:text="${typeReglement}"></span></p>
+  <p><strong>Consignes :</strong> <span th:text="${consignes}"></span></p>
+
+  <h3 class="text-lg font-semibold text-gray-700 mb-2">Produits sélectionnés</h3>
+  <table class="w-full text-sm border border-gray-300 mb-6">
+    <thead class="bg-gray-100 text-left">
+    <tr>
+      <th class="p-2 border">Produit</th>
+      <th class="p-2 border">Quantité</th>
+      <th class="p-2 border">Prix Unitaire</th>
+      <th class="p-2 border">Sous-total</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="ligne : ${lignes}" class="hover:bg-gray-50">
+      <td class="p-2 border" th:text="${ligne.produit.nom}"></td>
+      <td class="p-2 border" th:text="${ligne.quantite}"></td>
+      <td class="p-2 border" th:text="${ligne.prixUnitaire} + ' DH'"></td>
+      <td class="p-2 border" th:text="${#numbers.formatDecimal(ligne.prixUnitaire * ligne.quantite, 1, 2)} + ' DH'"></td>
+    </tr>
+    </tbody>
+  </table>
+
+  <form th:action="@{/DSM/commandes/confirmer}" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <input type="hidden" name="offreId" th:value="${offre.id}" />
+    <input type="hidden" name="pharmacyId" th:value="${pharmacy.id}" />
+    <input type="hidden" name="vmId" th:value="${vmId}" />
+    <input type="hidden" name="totalPrix" th:value="${totalPrix}" />
+    <input type="hidden" name="totalQuantite" th:value="${totalQuantite}" />
+
+    <input type="hidden" name="conditionPaiement" th:value="${conditionPaiement}" />
+    <input type="hidden" name="typeReglement" th:value="${typeReglement}" />
+    <input type="hidden" name="consignes" th:value="${consignes}" />
+
+    <div th:each="ligne : ${lignes}">
+      <input type="hidden" th:name="'quantite_' + ${ligne.produit.id}" th:value="${ligne.quantite}" />
+    </div>
+
+    <div class="flex justify-end gap-4">
+      <a th:href="@{/DSM/commandes/nouvelle}" class="bg-gray-300 px-4 py-2 rounded text-gray-800 hover:bg-gray-400">Annuler</a>
+      <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700">Confirmer la commande</button>
+    </div>
+  </form>
+</div>
+</body>
+</html>

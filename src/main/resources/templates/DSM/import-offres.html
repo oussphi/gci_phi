@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Import Offres</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+<div th:replace="fragments/header :: body"></div>
+
+<div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold text-indigo-700 mb-4">Importer des offres (Excel)</h1>
+
+    <div class="mb-4">
+        <a th:href="@{/DSM/offres/import/template}" class="text-indigo-600 underline">Télécharger le template Excel</a>
+    </div>
+
+    <div th:if="${success}" class="mb-4 p-3 bg-green-100 text-green-800 rounded" th:utext="${success}"></div>
+    <div th:if="${error}" class="mb-4 p-3 bg-red-100 text-red-800 rounded" th:utext="${error}"></div>
+
+    <form th:action="@{/DSM/offres/import}" method="post" enctype="multipart/form-data" class="space-y-4">
+        <div>
+            <label class="block mb-1 font-medium">Fichier (.xlsx)</label>
+            <input type="file" name="file" accept=".xlsx" class="border rounded px-3 py-2 w-full" required />
+        </div>
+        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+            Importer
+        </button>
+    </form>
+
+    <hr class="my-6"/>
+
+    <div class="text-sm text-gray-600">
+        <p class="mb-1 font-semibold">Colonnes attendues (feuille 1) :</p>
+        <ul class="list-disc ml-6">
+            <li>OffreNom, Description, DateDebut (yyyy-MM-dd), DateFin (yyyy-MM-dd), Active (true/false)</li>
+            <li>ProduitCode (ou ProduitNom), Prix, Remise%, Min, Max, Colisage (optionnel)</li>
+            <li>Gamme (optionnel : id ou nom — doit être autorisée pour le DSM)</li>
+        </ul>
+        <p class="mt-2">Plusieurs lignes peuvent appartenir à la même offre, regroupées par (OffreNom + DateDebut + DateFin).</p>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Importer des Pharmacies</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+<div th:replace="fragments/header :: body"></div>
+
+<div class="max-w-3xl mx-auto bg-white rounded shadow p-6">
+  <h1 class="text-2xl font-bold text-indigo-700 mb-4">Importer des pharmacies (Excel)</h1>
+
+  <div class="mb-4 text-sm bg-yellow-50 border border-yellow-200 p-3 rounded">
+    <p class="font-semibold">Format attendu (.xlsx) :</p>
+    <ul class="list-disc ml-5">
+      <li><code>nom</code> (obligatoire)</li>
+      <li><code>adresse</code></li>
+      <li><code>telephone</code></li>
+      <li><code>secteur</code> (nom du secteur OU <code>secteur_id</code>)</li>
+      <li><code>payed</code> (0/1, true/false, Oui/Non)</li>
+      <li><code>ice</code> (obligatoire)</li>
+    </ul>
+  </div>
+
+  <form th:action="@{/DSM/pharmacies/import}" method="post" enctype="multipart/form-data" class="space-y-4">
+    <div>
+      <label class="block mb-1 font-medium">Fichier Excel (.xlsx)</label>
+      <input type="file" name="file" accept=".xlsx" required class="w-full border px-3 py-2 rounded bg-white" />
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Importer</button>
+      <a th:href="@{/DSM/pharmacies}" class="text-indigo-600 hover:underline">Retour à la liste</a>
+      <a th:href="@{/DSM/pharmacies/import/template}" class="text-gray-600 hover:underline">Télécharger un modèle</a>
+    </div>
+  </form>
+
+  <div class="mt-6" th:if="${message}">
+    <div class="bg-green-50 text-green-700 border border-green-200 p-3 rounded" th:text="${message}"></div>
+  </div>
+  <div class="mt-6" th:if="${error}">
+    <div class="bg-red-50 text-red-700 border border-red-200 p-3 rounded" th:text="${error}"></div>
+  </div>
+
+  <div th:if="${report != null}" class="mt-6">
+    <h2 class="text-lg font-semibold mb-2">Rapport d’import</h2>
+    <pre class="bg-gray-50 p-3 rounded border border-gray-200 text-sm" th:text="${report}"></pre>
+  </div>
+</div>
+</body>
+</html>

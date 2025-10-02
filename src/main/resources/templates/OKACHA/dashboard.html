@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard OKACHA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes floaty {
+      0% { transform: translateY(0) translateX(0) rotate(0); }
+      50% { transform: translateY(-10px) translateX(6px) rotate(1.5deg); }
+      100% { transform: translateY(0) translateX(0) rotate(0); }
+    }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .aurora {
+      background: linear-gradient(120deg, #eef2ff, #fdf2f8, #ecfeff, #f5f3ff);
+      background-size: 300% 300%;
+      animation: gradientShift 18s ease infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen antialiased text-gray-900 overflow-x-hidden flex flex-col">
+  <!-- Fond décoratif -->
+  <div class="absolute inset-0 -z-10 aurora"></div>
+  <div class="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+    <div class="absolute -top-24 -left-24 w-[26rem] h-[26rem] rounded-full bg-gradient-to-tr from-indigo-400 via-violet-400 to-fuchsia-400 opacity-20 blur-3xl" style="animation: floaty 14s ease-in-out infinite;"></div>
+    <div class="absolute -right-24 top-16 w-[22rem] h-[22rem] rounded-full bg-gradient-to-tr from-sky-300 via-indigo-300 to-rose-300 opacity-20 blur-3xl" style="animation: floaty 18s ease-in-out infinite;"></div>
+    <div class="absolute left-1/2 -bottom-32 -translate-x-1/2 w-[38rem] h-[38rem] rounded-full bg-gradient-to-tr from-fuchsia-300 via-violet-300 to-cyan-300 opacity-20 blur-3xl" style="animation: floaty 22s ease-in-out infinite;"></div>
+  </div>
+
+  <!-- 🔹 HEADER -->
+  <div th:replace="fragments/header :: body"></div>
+
+  <!-- 🔹 DASHBOARD -->
+  <main class="flex-1">
+    <div class="container mx-auto px-4 py-14">
+      <section class="relative mx-auto max-w-5xl overflow-hidden rounded-3xl bg-white/70 backdrop-blur-xl ring-1 ring-black/5 shadow-2xl">
+        <!-- Liseré dégradé en haut -->
+        <div class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-cyan-500"></div>
+
+        <div class="p-8 sm:p-10">
+          <!-- En-tête / avatar + nom -->
+          <div class="flex items-center gap-4">
+            <div class="relative grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 via-fuchsia-500 to-cyan-400 text-white shadow-lg ring-1 ring-black/10">
+              <!-- Icône -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 opacity-95" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 12c2.8 0 5-2.2 5-5s-2.2-5-5-5-5 2.2-5 5 2.2 5 5 5Zm0 2c-4.7 0-8.5 2.9-8.5 6.5 0 .8.7 1.5 1.5 1.5h14c.8 0 1.5-.7 1.5-1.5 0-3.6-3.8-6.5-8.5-6.5Z"/>
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <p class="inline-flex items-center gap-2 text-xs font-medium text-indigo-700">
+                <span class="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-1 ring-1 ring-indigo-100">Rôle&nbsp;: <span class="ml-1 font-semibold text-indigo-600">OKACHA</span></span>
+              </p>
+              <h1 class="mt-2 text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900">
+                Bienvenue, <span class="bg-gradient-to-r from-indigo-600 via-fuchsia-600 to-cyan-600 bg-clip-text text-transparent" th:text="${username}">OKACHA</span>
+              </h1>
+              <p class="mt-2 text-gray-600">Accédez à vos actions clés ci-dessous.</p>
+            </div>
+          </div>
+
+          <!-- Actions disponibles -->
+          <h3 class="mt-10 text-lg font-semibold text-gray-800">Actions disponibles</h3>
+          <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <!-- Commandes (conserve votre backend: /OKACHA/commandes) -->
+            <a th:href="@{/OKACHA/commandes}" class="group relative block rounded-2xl border border-gray-200/70 bg-white/80 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-300/70 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" aria-label="Voir les commandes">
+              <div class="flex items-start gap-4">
+                <div class="rounded-xl bg-indigo-50 p-3 ring-1 ring-indigo-100">
+                  <!-- clipboard-list -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600 transition-transform duration-300 group-hover:scale-110" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M9 2h6a2 2 0 0 1 2 2h1a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1a2 2 0 0 1 2-2Zm0 2a1 1 0 0 0-1 1H7v1h10V5h-1a1 1 0 0 0-1-1H9Zm0 6h6a1 1 0 1 1 0 2H9a1 1 0 1 1 0-2Zm0 4h6a1 1 0 1 1 0 2H9a1 1 0 1 1 0-2Z"/>
+                  </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h4 class="text-base font-semibold text-gray-900">Commandes</h4>
+                  <p class="mt-1 text-sm text-gray-600">Voir et gérer les statuts.</p>
+                </div>
+                <div class="ml-2 self-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 translate-x-0 text-gray-400 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.29 6.71a1 1 0 0 0 0 1.41L12.17 11l-2.88 2.88a1 1 0 1 0 1.42 1.41l3.59-3.59a1 1 0 0 0 0-1.41L10.71 6.7a1 1 0 0 0-1.42.01z"/></svg>
+                </div>
+              </div>
+              <span class="pointer-events-none absolute inset-x-4 bottom-0 h-0.5 bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-cyan-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></span>
+            </a>
+          </div>
+
+          <!-- Astuce UX -->
+          <p class="mt-8 text-xs text-gray-500">
+            Astuce&nbsp;: utilisez <span class="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[11px]">Tab</span> pour naviguer entre les cartes et <span class="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[11px]">Entrée</span> pour ouvrir.
+          </p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-auto">
+    <div class="container mx-auto px-4 py-8 text-center text-sm text-gray-600">
+      &copy; <span id="year"></span> OKACHA Dashboard · Tous droits réservés
+    </div>
+  </footer>
+
+  <script>
+    // Mise à jour de l'année automatiquement
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
