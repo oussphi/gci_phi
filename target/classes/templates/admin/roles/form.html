@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${role.id != null ? 'Modifier' : 'Créer'} + ' un Rôle - Admin'">Rôle - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div class="flex items-center">
+                    <a href="/admin/roles" class="text-blue-600 hover:text-blue-800 mr-4">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <h1 class="text-2xl font-bold text-gray-900" th:text="${role.id != null ? 'Modifier' : 'Créer'} + ' un Rôle'">Rôle</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/admin/roles" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-list"></i>
+                    </a>
+                    <a href="/admin/dashboard" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-home"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Flash Messages -->
+        <div th:if="${success}" class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span th:text="${success}"></span>
+        </div>
+        
+        <div th:if="${error}" class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- Role Form -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <form th:action="${role.id != null ? '/admin/roles/' + role.id : '/admin/roles'}" 
+                  th:object="${role}" method="post" class="space-y-6">
+                
+                <!-- Basic Information -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        <i class="fas fa-shield-alt mr-2 text-blue-600"></i>
+                        Informations du Rôle
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                                Nom du rôle <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="name" th:field="*{name}" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   th:readonly="${role.id != null}"
+                                   required>
+                            <div th:if="${#fields.hasErrors('name')}" class="text-red-500 text-sm mt-1">
+                                <span th:errors="*{name}"></span>
+                            </div>
+                            <p class="text-gray-500 text-sm mt-1">
+                                Format recommandé: ROLE_NOM (ex: ROLE_DSM, ROLE_OKACHA)
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                                Description
+                            </label>
+                            <textarea id="description" th:field="*{description}" rows="3"
+                                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                      placeholder="Description du rôle et de ses permissions..."></textarea>
+                            <div th:if="${#fields.hasErrors('description')}" class="text-red-500 text-sm mt-1">
+                                <span th:errors="*{description}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role Templates -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        <i class="fas fa-copy mr-2 text-green-600"></i>
+                        Modèles de Rôles Prédéfinis
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button type="button" onclick="selectRoleTemplate('ROLE_DSM')" 
+                                class="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors text-left">
+                            <div class="font-medium text-gray-900">ROLE_DSM</div>
+                            <div class="text-sm text-gray-600">Directeur des Ventes Médicales</div>
+                            <div class="text-xs text-gray-500 mt-1">Gestion des équipes et des ventes</div>
+                        </button>
+                        
+                        <button type="button" onclick="selectRoleTemplate('ROLE_OKACHA')" 
+                                class="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors text-left">
+                            <div class="font-medium text-gray-900">ROLE_OKACHA</div>
+                            <div class="text-sm text-gray-600">Gestionnaire des Commandes</div>
+                            <div class="text-xs text-gray-500 mt-1">Suivi et traitement des commandes</div>
+                        </button>
+                        
+                        <button type="button" onclick="selectRoleTemplate('ROLE_GROSSISTE')" 
+                                class="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors text-left">
+                            <div class="font-medium text-gray-900">ROLE_GROSSISTE</div>
+                            <div class="text-sm text-gray-600">Gestionnaire des Stocks</div>
+                            <div class="text-xs text-gray-500 mt-1">Gestion des inventaires et approvisionnements</div>
+                        </button>
+                        
+                        <button type="button" onclick="selectRoleTemplate('ROLE_USINE')" 
+                                class="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors text-left">
+                            <div class="font-medium text-gray-900">ROLE_USINE</div>
+                            <div class="text-sm text-gray-600">Gestionnaire de Production</div>
+                            <div class="text-xs text-gray-500 mt-1">Suivi de la production et qualité</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Custom Permissions -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        <i class="fas fa-key mr-2 text-purple-600"></i>
+                        Permissions Personnalisées
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex items-center">
+                                <input type="checkbox" id="perm_users" name="permissions" value="MANAGE_USERS" 
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <label for="perm_users" class="ml-2 block text-sm text-gray-900">
+                                    Gestion des utilisateurs
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" id="perm_roles" name="permissions" value="MANAGE_ROLES" 
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <label for="perm_roles" class="ml-2 block text-sm text-gray-900">
+                                    Gestion des rôles
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" id="perm_pharmacies" name="permissions" value="MANAGE_PHARMACIES" 
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <label for="perm_pharmacies" class="ml-2 block text-sm text-gray-900">
+                                    Gestion des pharmacies
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" id="perm_products" name="permissions" value="MANAGE_PRODUCTS" 
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <label for="perm_products" class="ml-2 block text-sm text-gray-900">
+                                    Gestion des produits
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" id="perm_offers" name="permissions" value="MANAGE_OFFERS" 
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <label for="perm_offers" class="ml-2 block text-sm text-gray-900">
+                                    Gestion des offres
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" id="perm_orders" name="permissions" value="MANAGE_ORDERS" 
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <label for="perm_orders" class="ml-2 block text-sm text-gray-900">
+                                    Gestion des commandes
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role Information -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-blue-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-blue-800">Informations importantes</h3>
+                            <div class="mt-2 text-sm text-blue-700">
+                                <ul class="list-disc pl-5 space-y-1">
+                                    <li>Les noms de rôles doivent commencer par "ROLE_"</li>
+                                    <li>Un rôle ne peut pas être supprimé s'il est attribué à des utilisateurs</li>
+                                    <li>Les permissions sont gérées au niveau du contrôleur avec @PreAuthorize</li>
+                                    <li>Les rôles système (ROLE_ADMIN) ne peuvent pas être modifiés</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-end space-x-4 pt-6">
+                    <a href="/admin/roles" 
+                       class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors">
+                        <i class="fas fa-times mr-2"></i>Annuler
+                    </a>
+                    <button type="submit" 
+                            class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-save mr-2"></i>
+                        <span th:text="${role.id != null ? 'Mettre à jour' : 'Créer'}">Sauvegarder</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Role template selection
+        function selectRoleTemplate(roleName) {
+            const nameField = document.getElementById('name');
+            const descriptionField = document.getElementById('description');
+            
+            if (nameField && !nameField.hasAttribute('readonly')) {
+                nameField.value = roleName;
+                
+                // Set description based on role
+                const descriptions = {
+                    'ROLE_DSM': 'Directeur des Ventes Médicales - Gestion des équipes de vente, création d\'offres, suivi des performances et gestion des pharmacies.',
+                    'ROLE_OKACHA': 'Gestionnaire des Commandes - Suivi et traitement des commandes, gestion des statuts et coordination avec les équipes.',
+                    'ROLE_GROSSISTE': 'Gestionnaire des Stocks - Gestion des inventaires, approvisionnements et contrôle des stocks.',
+                    'ROLE_USINE': 'Gestionnaire de Production - Suivi de la production, contrôle qualité et planification.'
+                };
+                
+                if (descriptions[roleName]) {
+                    descriptionField.value = descriptions[roleName];
+                }
+                
+                // Set default permissions based on role
+                setDefaultPermissions(roleName);
+            }
+        }
+
+        function setDefaultPermissions(roleName) {
+            const permissions = {
+                'ROLE_DSM': ['MANAGE_OFFERS', 'MANAGE_PHARMACIES'],
+                'ROLE_OKACHA': ['MANAGE_ORDERS'],
+                'ROLE_GROSSISTE': ['MANAGE_PRODUCTS'],
+                'ROLE_USINE': ['MANAGE_PRODUCTS']
+            };
+            
+            if (permissions[roleName]) {
+                // Reset all checkboxes
+                document.querySelectorAll('input[name="permissions"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                
+                // Check default permissions
+                permissions[roleName].forEach(perm => {
+                    const checkbox = document.querySelector(`input[value="${perm}"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
+                });
+            }
+        }
+
+        // Form validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const nameField = document.getElementById('name');
+
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+                let errorMessage = '';
+
+                // Validate required fields
+                if (!nameField.value.trim()) {
+                    errorMessage += 'Le nom du rôle est requis.\n';
+                    isValid = false;
+                }
+
+                // Validate role name format
+                if (nameField.value.trim() && !nameField.value.trim().startsWith('ROLE_')) {
+                    errorMessage += 'Le nom du rôle doit commencer par "ROLE_".\n';
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Veuillez corriger les erreurs suivantes:\n\n' + errorMessage);
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

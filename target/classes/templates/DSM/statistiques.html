@@ -1,0 +1,166 @@
+<!-- src/main/resources/templates/DSM/statistiques.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Statistiques & Graphiques - DSM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 p-6">
+<div th:replace="fragments/header :: body"></div>
+
+<div class="max-w-7xl mx-auto bg-white rounded shadow p-6">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl font-bold text-indigo-700">Statistiques & Graphiques</h2>
+    <a th:href="@{/DSM/commandes}" class="text-sm text-indigo-600 hover:underline">↩ Historique commandes</a>
+  </div>
+
+  <!-- Filtres -->
+  <form method="get" class="flex flex-wrap gap-4 items-end mb-6">
+    <div>
+      <label class="block text-sm font-medium">Date début</label>
+      <input type="date" name="startDate" th:value="${startDate}" class="border rounded px-2 py-1"/>
+    </div>
+    <div>
+      <label class="block text-sm font-medium">Date fin</label>
+      <input type="date" name="endDate" th:value="${endDate}" class="border rounded px-2 py-1"/>
+    </div>
+    <div>
+      <label class="block text-sm font-medium">Gamme</label>
+      <select name="gammeId" class="border rounded px-2 py-1">
+        <option value="">-- Toutes --</option>
+        <option th:each="g : ${gammes}"
+                th:value="${g.id}"
+                th:text="${g.nom}"
+                th:selected="${filtreGammeId != null and g.id == filtreGammeId}"></option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium">VM (équipe)</label>
+      <select name="userId" class="border rounded px-2 py-1">
+        <option value="">-- Tous --</option>
+        <option th:each="u : ${equipe}"
+                th:value="${u.id}"
+                th:text="${u.username}"
+                th:selected="${filtreUserId != null and u.id == filtreUserId}"></option>
+      </select>
+    </div>
+    <button class="bg-indigo-600 text-white px-4 py-2 rounded h-10">Appliquer</button>
+  </form>
+
+  <!-- KPIs -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="p-4 rounded border">
+      <div class="text-sm text-gray-500">CA total (période)</div>
+      <div class="text-2xl font-bold" th:text="${#numbers.formatDecimal(caTotal, 1, 2)} + ' DH'">0 DH</div>
+    </div>
+    <div class="p-4 rounded border">
+      <div class="text-sm text-gray-500"># Commandes (approx.)</div>
+      <div class="text-2xl font-bold" th:text="${nbCmd}">0</div>
+    </div>
+    <div class="p-4 rounded border">
+      <div class="text-sm text-gray-500">Top client (affiché dans le graphe)</div>
+      <div class="text-md text-gray-700">Voir “Top clients”</div>
+    </div>
+  </div>
+
+  <!-- Graphiques -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white border rounded p-4">
+      <h3 class="font-semibold mb-2">CA par mois</h3>
+      <canvas id="chartMonth" height="120"></canvas>
+    </div>
+    <div class="bg-white border rounded p-4">
+      <h3 class="font-semibold mb-2">Répartition par secteur</h3>
+      <canvas id="chartSecteur" height="120"></canvas>
+    </div>
+    <div class="bg-white border rounded p-4">
+      <h3 class="font-semibold mb-2">CA par VM</h3>
+      <canvas id="chartVm" height="120"></canvas>
+    </div>
+    <div class="bg-white border rounded p-4">
+      <h3 class="font-semibold mb-2">Top clients</h3>
+      <canvas id="chartClients" height="120"></canvas>
+    </div>
+    <div class="bg-white border rounded p-4">
+      <h3 class="font-semibold mb-2">CA par offre</h3>
+      <canvas id="chartOffre" height="120"></canvas>
+    </div>
+    <div class="bg-white border rounded p-4">
+      <h3 class="font-semibold mb-2">CA par gamme</h3>
+      <canvas id="chartGamme" height="120"></canvas>
+    </div>
+    <div class="bg-white border rounded p-4">
+      <h3 class="font-semibold mb-2">Nombre de commandes / mois</h3>
+      <canvas id="chartOrdersCount" height="120"></canvas>
+    </div>
+    <div class="bg-white border rounded p-4">
+      <h3 class="font-semibold mb-2">Top produits (quantité)</h3>
+      <canvas id="chartProducts" height="120"></canvas>
+    </div>
+    <div class="bg-white border rounded p-4">
+      <h3 class="font-semibold mb-2">Répartition par statut</h3>
+      <canvas id="chartStatus" height="120"></canvas>
+    </div>
+    <div class="bg-white border rounded p-4">
+      <h3 class="font-semibold mb-2">Panier moyen par VM</h3>
+      <canvas id="chartAvgVm" height="120"></canvas>
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+const monthsLabels  = [[${monthsLabels}]];
+const monthsValues  = [[${monthsValues}]];
+const secteurLabels = [[${secteurLabels}]];
+const secteurValues = [[${secteurValues}]];
+const vmLabels      = [[${vmLabels}]];
+const vmValues      = [[${vmValues}]];
+const clientLabels  = [[${clientLabels}]];
+const clientValues  = [[${clientValues}]];
+const offreLabels   = [[${offreLabels}]];
+const offreValues   = [[${offreValues}]];
+const gammeLabels   = [[${gammeLabels}]];
+const gammeValues   = [[${gammeValues}]];
+const ordersMonthLabels = [[${ordersMonthLabels}]];
+const ordersMonthValues = [[${ordersMonthValues}]];
+const prodLabels    = [[${prodLabels}]];
+const prodValues    = [[${prodValues}]];
+const statusLabels  = [[${statusLabels}]];
+const statusValues  = [[${statusValues}]];
+const avgVmLabels   = [[${avgVmLabels}]];
+const avgVmValues   = [[${avgVmValues}]];
+
+function mk(ctx, type, labels, data) {
+  return new Chart(ctx, {
+    type,
+    data: {
+      labels,
+      datasets: [{ data, borderWidth: 2, fill: (type === 'line') }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: type !== 'pie' ? { y: { beginAtZero: true } } : {}
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  mk(document.getElementById('chartMonth'), 'line', monthsLabels, monthsValues);
+  mk(document.getElementById('chartSecteur'), 'pie',  secteurLabels, secteurValues);
+  mk(document.getElementById('chartVm'), 'bar', vmLabels, vmValues);
+  mk(document.getElementById('chartClients'), 'bar', clientLabels, clientValues);
+  mk(document.getElementById('chartOffre'), 'bar', offreLabels, offreValues);
+  mk(document.getElementById('chartGamme'), 'bar', gammeLabels, gammeValues);
+  mk(document.getElementById('chartOrdersCount'), 'line', ordersMonthLabels, ordersMonthValues);
+  mk(document.getElementById('chartProducts'), 'bar', prodLabels, prodValues);
+  mk(document.getElementById('chartStatus'), 'pie', statusLabels, statusValues);
+  mk(document.getElementById('chartAvgVm'), 'bar', avgVmLabels, avgVmValues);
+});
+/*]]>*/
+</script>
+</body>
+</html>

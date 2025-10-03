@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Détails commande - DSM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <div th:replace="fragments/header :: body"></div>
+
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+      <a th:href="@{/DSM/commandes}" class="inline-flex items-center text-sm text-slate-600 hover:text-slate-800">
+        ← Retour à la liste
+      </a>
+      <h1 class="mt-2 text-2xl font-semibold text-slate-800">
+        Commande #<span th:text="${cmd.id}">0</span>
+      </h1>
+      <div class="mt-3 flex gap-3 items-center">
+        <a th:href="@{'/DSM/commande/' + ${cmd.id} + '/bon.pdf'}" class="inline-flex items-center gap-2 rounded bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19 2H8a2 2 0 0 0-2 2v3h2V4h11v16H8v-3H6v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2ZM7 14l5 5 5-5h-3V4h-4v10H7Z"/></svg>
+          Télécharger le bon (PDF)
+        </a>
+        <a th:href="@{'/DSM/commandes/' + ${cmd.id} + '/edit'}" class="inline-flex items-center gap-2 rounded bg-amber-500 px-3 py-2 text-sm font-medium text-white hover:bg-amber-600">
+          Modifier la commande
+        </a>
+      </div>
+      <p class="text-sm text-slate-500">
+        Statut:
+        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-slate-50 text-slate-700 ring-slate-200"
+              th:text="${cmd.status}">-</span>
+      </p>
+    </div>
+
+    <!-- Informations -->
+    <section class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 p-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h2 class="text-sm font-semibold text-slate-600 mb-2">Informations générales</h2>
+          <dl class="text-sm text-slate-700 space-y-1">
+            <div class="flex justify-between"><dt class="text-slate-500">Date</dt><dd th:text="${cmd.dateCommande != null ? #temporals.format(cmd.dateCommande, 'yyyy-MM-dd HH:mm') : '-'}"></dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">VM</dt><dd th:text="${cmd.user != null ? cmd.user.username : '-'}"></dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">Offre</dt><dd th:text="${cmd.offre != null ? cmd.offre.nom : '-'}"></dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">Condition paiement</dt><dd th:text="${cmd.conditionPaiement}">-</dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">Type règlement</dt><dd th:text="${cmd.typeReglement}">-</dd></div>
+          </dl>
+        </div>
+        <div>
+          <h2 class="text-sm font-semibold text-slate-600 mb-2">Pharmacie</h2>
+          <dl class="text-sm text-slate-700 space-y-1">
+            <div class="flex justify-between"><dt class="text-slate-500">Nom</dt><dd th:text="${cmd.pharmacy != null ? cmd.pharmacy.nom : '-'}"></dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">ICE</dt><dd th:text="${cmd.pharmacy != null ? cmd.pharmacy.ice : '-'}"></dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">Secteur</dt><dd th:text="${cmd.pharmacy != null && cmd.pharmacy.secteur != null ? cmd.pharmacy.secteur.nom : '-'}"></dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lignes -->
+    <section class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 overflow-hidden">
+      <div class="px-4 sm:px-6 py-4 border-b border-slate-200 bg-slate-50">
+        <h2 class="text-sm font-semibold text-slate-700">Détails des produits</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="text-xs uppercase text-slate-600 bg-slate-50">
+            <tr>
+              <th class="px-4 sm:px-6 py-3">Produit</th>
+              <th class="px-4 sm:px-6 py-3">Statut</th>
+              <th class="px-4 sm:px-6 py-3">Quantité</th>
+              <th class="px-4 sm:px-6 py-3">PU (DH)</th>
+              <th class="px-4 sm:px-6 py-3">Total (DH)</th>
+            </tr>
+          </thead>
+          <tbody class="text-sm text-slate-700">
+            <tr th:if="${#lists.isEmpty(lignes)}">
+              <td colspan="5" class="px-6 py-12 text-center text-slate-500">Aucune ligne de commande</td>
+            </tr>
+            <tr th:each="l : ${lignes}"
+                class="odd:bg-white even:bg-slate-50"
+                th:classappend="${l.rupture} ? ' opacity-50' : ''">
+              <td class="px-4 sm:px-6 py-3" th:text="${l.produitNom}">-</td>
+              <td class="px-4 sm:px-6 py-3">
+                <span class="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 px-2 py-0.5 text-xs" th:if="${!l.rupture}">Incluse</span>
+                <span class="inline-flex items-center rounded-full bg-amber-100 text-amber-800 ring-1 ring-amber-200 px-2 py-0.5 text-xs" th:if="${l.rupture}">Rupture de stock</span>
+              </td>
+              <td class="px-4 sm:px-6 py-3" th:text="${l.quantite}">0</td>
+              <td class="px-4 sm:px-6 py-3" th:text="${#numbers.formatDecimal(l.prixUnitaire, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+              <td class="px-4 sm:px-6 py-3" th:text="${#numbers.formatDecimal(l.prixUnitaire * l.quantite, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="bg-slate-50 text-slate-800 font-medium">
+              <td class="px-4 sm:px-6 py-3" colspan="4">Total (après modif)</td>
+              <td class="px-4 sm:px-6 py-3" th:text="${#numbers.formatDecimal(cmd.totalPrix, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+            </tr>
+            <tr class="bg-slate-50 text-slate-600">
+              <td class="px-4 sm:px-6 py-3" colspan="4" th:if="${cmd.totalAvantModification != null}">Total avant modification</td>
+              <td class="px-4 sm:px-6 py-3" th:if="${cmd.totalAvantModification != null}"
+                  th:text="${#numbers.formatDecimal(cmd.totalAvantModification, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

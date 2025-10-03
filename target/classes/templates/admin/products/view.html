@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${product.nom} + ' - Administration'">Détails Produit - Administration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <a href="/admin/products" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-arrow-left text-xl"></i>
+                    </a>
+                    <h1 class="text-2xl font-bold text-gray-900" th:text="${product.nom}">Nom Produit</h1>
+                </div>
+                <div class="flex space-x-3">
+                    <a th:href="@{/admin/products/form/{id}(id=${product.id})}" 
+                       class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                        <i class="fas fa-edit"></i>
+                        <span>Modifier</span>
+                    </a>
+                    <a href="/admin/products" 
+                       class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                        <i class="fas fa-list"></i>
+                        <span>Liste</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="flex items-center">
+                    <div class="p-2 bg-blue-100 rounded-lg">
+                        <i class="fas fa-box text-blue-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Code</p>
+                        <p class="text-2xl font-bold text-gray-900" th:text="${product.code}">CODE</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="flex items-center">
+                    <div class="p-2 bg-green-100 rounded-lg">
+                        <i class="fas fa-coins text-green-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Prix</p>
+                        <p class="text-2xl font-bold text-gray-900" th:text="${#numbers.formatDecimal(product.prix, 1, 2) + ' DH'}">Prix</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="flex items-center">
+                    <div class="p-2 bg-purple-100 rounded-lg">
+                        <i class="fas fa-warehouse text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Stock</p>
+                        <p class="text-2xl font-bold text-gray-900" th:text="${product.quantite}">Stock</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="flex items-center">
+                    <div class="p-2 bg-yellow-100 rounded-lg">
+                        <i class="fas fa-tags text-yellow-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Gammes</p>
+                        <p class="text-2xl font-bold text-gray-900" th:text="${#lists.size(product.gammes)}">Gammes</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Information -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column - Basic Information -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Basic Information Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                        Informations de base
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500">Nom du produit</label>
+                            <p class="mt-1 text-sm text-gray-900" th:text="${product.nom}">Nom</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500">Code</label>
+                            <p class="mt-1 text-sm text-gray-900" th:text="${product.code}">Code</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500">Prix</label>
+                            <p class="mt-1 text-sm text-gray-900" th:text="${#numbers.formatDecimal(product.prix, 1, 2) + ' DH'}">Prix</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500">Stock</label>
+                            <p class="mt-1 text-sm text-gray-900" th:text="${product.quantite}">Stock</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Details Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-box text-green-600 mr-2"></i>
+                        Détails du produit
+                    </h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500">Description</label>
+                            <p class="mt-1 text-sm text-gray-900" th:text="${product.description ?: 'Aucune description'}">Description</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500">Gammes associées</label>
+                            <div class="mt-2 flex flex-wrap gap-2">
+                                <span th:each="gamme : ${product.gammes}" 
+                                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    <i class="fas fa-tag mr-1"></i>
+                                    <span th:text="${gamme.nom}">Gamme</span>
+                                </span>
+                                <span th:if="${#lists.isEmpty(product.gammes)}" 
+                                      class="text-sm text-gray-500">Aucune gamme assignée</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Information Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-cog text-gray-600 mr-2"></i>
+                        Informations système
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500">Date de création</label>
+                            <p class="mt-1 text-sm text-gray-900" th:text="${product.createdAt ? #temporals.format(product.createdAt, 'dd/MM/yyyy HH:mm') : 'Non renseigné'}">Date</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500">Dernière modification</label>
+                            <p class="mt-1 text-sm text-gray-900" th:text="${product.updatedAt ? #temporals.format(product.updatedAt, 'dd/MM/yyyy HH:mm') : 'Non renseigné'}">Date</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Actions and Statistics -->
+            <div class="space-y-6">
+                <!-- Quick Actions Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-bolt text-orange-600 mr-2"></i>
+                        Actions rapides
+                    </h3>
+                    <div class="space-y-3">
+                        <a th:href="@{/admin/products/form/{id}(id=${product.id})}" 
+                           class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i class="fas fa-edit mr-2"></i>
+                            Modifier
+                        </a>
+                        <button th:onclick="'deleteProduct(' + ${product.id} + ')'" 
+                                class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            <i class="fas fa-trash mr-2"></i>
+                            Supprimer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product Statistics Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-chart-bar text-blue-600 mr-2"></i>
+                        Statistiques
+                    </h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">ID:</span>
+                            <span class="text-gray-900 font-mono" th:text="${product.id}">ID</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Prix unitaire:</span>
+                            <span class="text-gray-900" th:text="${#numbers.formatDecimal(product.prix, 1, 2) + ' DH'}">Prix</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Stock disponible:</span>
+                            <span class="text-gray-900" th:text="${product.quantite}">Stock</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Gammes:</span>
+                            <span class="text-gray-900" th:text="${#lists.size(product.gammes)}">Gammes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Confirmer la suppression</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">
+                        Êtes-vous sûr de vouloir supprimer le produit <strong th:text="${product.nom}">Nom</strong> ? 
+                        Cette action est irréversible.
+                    </p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="confirmDelete" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-red-600">
+                        Supprimer
+                    </button>
+                    <button id="cancelDelete" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-24 hover:bg-gray-600">
+                        Annuler
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Delete product
+        function deleteProduct(productId) {
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
+
+        // Confirm delete
+        document.getElementById('confirmDelete').addEventListener('click', function() {
+            const productId = window.location.pathname.split('/').pop();
+            fetch(`/admin/products/${productId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/admin/products';
+                } else {
+                    alert('Erreur lors de la suppression');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Erreur lors de la suppression');
+            });
+            document.getElementById('deleteModal').classList.add('hidden');
+        });
+
+        // Cancel delete
+        document.getElementById('cancelDelete').addEventListener('click', function() {
+            document.getElementById('deleteModal').classList.add('hidden');
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Créer une Offre</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+<div th:replace="fragments/header :: body"></div>
+
+<div class="max-w-4xl mx-auto bg-white p-8 rounded shadow">
+    <h1 class="text-2xl font-bold mb-6 text-indigo-700">Nouvelle Offre</h1>
+
+    <form th:action="@{/DSM/nouvelle-offre}" method="post" id="offreForm">
+        <!-- Infos Offre -->
+        <div class="mb-4">
+            <label class="block mb-1 font-medium text-gray-700">Nom de l'offre</label>
+            <input type="text" name="nom" class="w-full border px-3 py-2 rounded" required />
+        </div>
+        <div class="mb-4">
+            <label class="block mb-1 font-medium text-gray-700">Description</label>
+            <textarea name="description" class="w-full border px-3 py-2 rounded" required></textarea>
+        </div>
+        <div class="mb-4 flex gap-4">
+            <div class="flex-1">
+                <label class="block mb-1 font-medium text-gray-700">Date de début</label>
+                <input type="date" name="dateDebut" class="w-full border px-3 py-2 rounded" required />
+            </div>
+            <div class="flex-1">
+                <label class="block mb-1 font-medium text-gray-700">Date de fin</label>
+                <input type="date" name="dateFin" class="w-full border px-3 py-2 rounded" required />
+            </div>
+        </div>
+
+        <!-- Table Produits -->
+        <h2 class="text-lg font-semibold mt-6 mb-2">Produits dans l'offre</h2>
+        <table class="min-w-full border text-sm" id="produitsTable">
+            <thead class="bg-gray-200">
+            <tr>
+                <th class="border p-2">Produit</th>
+                <th class="border p-2">Prix</th>
+                <th class="border p-2">Remise (%)</th>
+                <th class="border p-2">Min</th>
+                <th class="border p-2">Max</th>
+                <th class="border p-2">Colisage</th>
+                <th class="border p-2">Action</th>
+            </tr>
+            </thead>
+            <tbody id="produitsBody">
+            <!-- Rempli dynamiquement -->
+            </tbody>
+        </table>
+
+        <div id="noProductsMessage" class="hidden mt-4 p-4 bg-yellow-100 text-yellow-800 rounded">
+            Aucun produit disponible. Veuillez d'abord créer des produits.
+        </div>
+
+        <button type="button"
+                id="btn-ajouter"
+                class="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+            Ajouter un produit
+        </button>
+
+        <div class="mt-6 text-right">
+            <button type="submit" 
+                    class="bg-indigo-600 text-white px-5 py-2 rounded hover:bg-indigo-700">
+                Enregistrer l'offre
+            </button>
+        </div>
+                <div class="flex gap-3">
+            <!-- Lien vers la page d'import -->
+            <a th:href="@{/DSM/offres/import}"
+               class="px-4 py-2 rounded bg-amber-500 text-white hover:bg-amber-600">
+                Importer des offres (Excel)
+            </a>
+
+            <!-- Téléchargement direct du template -->
+            <a th:href="@{/DSM/offres/import/template}"
+               class="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300">
+                Télécharger le template
+            </a>
+        </div>
+    </form>
+     <!-- Table Produits 
+    <div class="mb-4 bg-yellow-100 p-4 text-sm rounded text-gray-700">
+        <strong>Produits disponibles :</strong>
+        <ul>
+            <li th:each="p : ${produits}" th:text="${p.nom}">Produit</li>
+        </ul>
+    </div>-->
+    
+</div>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // Récupération directe des produits via Thymeleaf
+    const produits = [
+        /*[# th:each="p : ${produits}"]*/
+        {
+            id: /*[[${p.id}]]*/,
+            nom: /*[[${p.nom}]]*/
+        },
+        /*[/]*/
+    ];
+    
+    function ajouterLigneProduit() {
+        const table = document.getElementById("produitsBody");
+        const noProductsMsg = document.getElementById("noProductsMessage");
+
+        if (produits.length === 0) {
+            noProductsMsg.classList.remove("hidden");
+            noProductsMsg.textContent = "Aucun produit disponible. Veuillez d'abord créer des produits.";
+            return;
+        }
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td class="border p-2">
+                <select name="produitIds" class="w-full border rounded px-2 py-1" required>
+                    ${produits.map(p => `<option value="${p.id}">${p.nom}</option>`).join('')}
+                </select>
+            </td>
+            <td class="border p-2"><input type="number" step="0.01" name="prix" class="w-full border rounded px-2 py-1" required /></td>
+            <td class="border p-2"><input type="number" name="remise" class="w-full border rounded px-2 py-1" required /></td>
+            <td class="border p-2"><input type="number" name="min" class="w-full border rounded px-2 py-1" required /></td>
+            <td class="border p-2"><input type="number" name="max" class="w-full border rounded px-2 py-1" required /></td>
+            <td class="border p-2"><input type="number" name="colisage" min="1" step="1" class="w-full border rounded px-2 py-1" /></td>
+            <td class="border p-2 text-center">
+                <button type="button" onclick="this.closest('tr').remove()" class="text-red-600 hover:underline">Supprimer</button>
+            </td>
+        `;
+        table.appendChild(row);
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        console.log("Produits disponibles:", produits); // Debug
+        
+        if (produits.length > 0) {
+            ajouterLigneProduit(); // Ajoute une ligne par défaut
+        } else {
+            document.getElementById("noProductsMessage").classList.remove("hidden");
+        }
+        
+        document.getElementById("btn-ajouter").addEventListener("click", ajouterLigneProduit);
+    });
+    /*]]>*/
+</script>
+</body>
+</html>

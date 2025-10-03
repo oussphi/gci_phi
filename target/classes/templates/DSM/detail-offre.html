@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Détails de l'offre</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div th:replace="fragments/header :: body"></div>
+
+<div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold text-indigo-700 mb-4">Détails de l'offre</h1>
+
+    <div class="mb-4">
+        <p><strong>Nom :</strong> <span th:text="${offre.nom}"></span></p>
+        <p><strong>Description :</strong> <span th:text="${offre.description}"></span></p>
+        <p><strong>Date début :</strong> <span th:text="${offre.dateDebut}"></span></p>
+        <p><strong>Date fin :</strong> <span th:text="${offre.dateFin}"></span></p>
+    </div>
+
+    <h2 class="text-lg font-semibold text-gray-700 mb-2">Produits de l'offre</h2>
+    <table class="min-w-full border border-gray-300 text-sm">
+        <thead class="bg-gray-200">
+        <tr>
+            <th class="border p-2">Produit</th>
+            <th class="border p-2">Prix</th>
+            <th class="border p-2">Remise (%)</th>
+            <th class="border p-2">Quantité Min</th>
+            <th class="border p-2">Quantité Max</th>
+            <th class="border p-2">Colisage</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="op : ${produits}" class="border-b">
+            <td class="border p-2" th:text="${op.produit.nom}">Nom produit</td>
+            <td class="border p-2" th:text="${op.prix}">0.00</td>
+            <td class="border p-2" th:text="${op.remisePourcent}">0</td>
+            <td class="border p-2" th:text="${op.quantiteMin}">0</td>
+            <td class="border p-2" th:text="${op.quantiteMax}">0</td>
+            <td class="border p-2" th:text="${op.colisage}">-</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="flex justify-between items-center">
+        <a th:href="@{'/DSM/mes-offres/edit/' + ${offre.id}}"
+           class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+            ✏️ Modifier l'offre
+        </a>
+
+        <a href="/DSM/mes-offres" class="text-indigo-600 hover:underline">
+            &larr; Retour à la liste des offres
+        </a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${title != null ? title : 'Téléchargement en cours'}">Téléchargement en cours</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-6">
+  <div class="max-w-lg w-full bg-white shadow rounded-2xl p-8 text-center">
+    <h1 class="text-2xl font-semibold text-gray-900 mb-3">Téléchargement du bon</h1>
+    <p class="text-gray-600 mb-6" th:text="${message != null ? message : 'Votre bon de commande va se télécharger. Vous serez ensuite redirigé.'}">
+      Votre bon de commande va se télécharger. Vous serez ensuite redirigé.
+    </p>
+
+    <div class="flex items-center justify-center gap-3 mb-6">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600 animate-bounce" viewBox="0 0 24 24" fill="currentColor"><path d="M19 2H8a2 2 0 0 0-2 2v3h2V4h11v16H8v-3H6v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2ZM7 14l5 5 5-5h-3V4h-4v10H7Z"/></svg>
+      <span class="text-sm text-gray-500">Téléchargement…</span>
+    </div>
+
+    <div class="space-x-2">
+      <a th:href="${downloadUrl}" class="inline-flex items-center gap-2 rounded bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+        Télécharger à nouveau
+      </a>
+      <a th:href="${redirectUrl}" class="inline-flex items-center gap-2 rounded bg-gray-200 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300">
+        Aller au tableau de bord
+      </a>
+    </div>
+  </div>
+
+  <iframe id="dlFrame" title="pdf" class="hidden" th:src="${downloadUrl}"></iframe>
+
+  <script th:inline="javascript">
+    const redirectUrl = /*[[${redirectUrl}]]*/ '/dashboard/client';
+    const delayMs = (/*[[${delaySeconds}]]*/ 2) * 1000;
+    // L'iframe ci-dessus déclenche le téléchargement sans changer de page.
+    // Redirection après un court délai.
+    setTimeout(() => {
+      window.location.href = redirectUrl;
+    }, delayMs);
+  </script>
+</body>
+<html>
+
+

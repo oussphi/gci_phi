@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>DSM - Passer une commande</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css">
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+  <script>
+    function calculerTotal() {
+      let total = 0;
+      document.querySelectorAll('.ligne-produit').forEach(row => {
+        const prix = parseFloat(row.querySelector('.prix').textContent || 0);
+        const remise = parseFloat(row.querySelector('.remise').textContent || 0);
+        const qte = parseInt(row.querySelector('.quantite').value || 0);
+        const prixRemise = prix - (prix * remise / 100);
+        total += prixRemise * qte;
+      });
+      const conditionPaiement = document.querySelector("select[name='conditionPaiement']").value;
+      let reduction = 0;
+      let totalNet = total;
+      if (conditionPaiement === "AU COMPTANT" || conditionPaiement === "AU COMPTANT SE") {
+        reduction = total * 0.02;
+        totalNet = total - reduction;
+      }
+      document.getElementById('totalBrut').textContent = total.toFixed(2) + ' DH';
+      document.getElementById('remisePaiement').textContent = reduction > 0 ? "- " + reduction.toFixed(2) + ' DH (2%)' : "- 0.00 DH";
+      document.getElementById('totalCommande').textContent = totalNet.toFixed(2) + ' DH';
+    }
+    let tsSecteur, tsPharmacy, tsVm;
+
+    async function fetchJSON(url) {
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) return [];
+      return await res.json();
+    }
+
+    async function loadSecteursForVm(vmId) {
+      const data = await fetchJSON(`/DSM/vm/${vmId}/secteurs`);
+      tsSecteur.clearOptions();
+      tsSecteur.addOption({ value: '', text: '-- Tous les secteurs --' });
+      data.forEach(s => tsSecteur.addOption({ value: String(s.id), text: s.nom }));
+      tsSecteur.refreshOptions(false);
+      tsSecteur.setValue('', true);
+    }
+
+    async function loadPharmaciesForVm(vmId, secteurId) {
+      let url = `/DSM/vm/${vmId}/pharmacies`;
+      if (secteurId) url += `?secteurId=${encodeURIComponent(secteurId)}`;
+      const data = await fetchJSON(url);
+      tsPharmacy.clearOptions();
+      tsPharmacy.addOption({ value: '', text: '-- Choisir une pharmacie --' });
+      data.forEach(p => tsPharmacy.addOption({ value: String(p.id), text: p.nom + (p.payed ? '' : ' (non payée)'), disabled: !p.payed }));
+      tsPharmacy.refreshOptions(false);
+      tsPharmacy.setValue('', true);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      tsVm = new TomSelect('#vmSelect', { allowEmptyOption: true, placeholder: 'Sélectionner un VM…' });
+      tsSecteur = new TomSelect('#secteurSelect', { allowEmptyOption: true, placeholder: 'Rechercher…' });
+      tsPharmacy = new TomSelect('#pharmacySelect', { allowEmptyOption: true, placeholder: 'Rechercher…' });
+
+      // Au changement de VM, charger ses secteurs et pharmacies
+      document.getElementById('vmSelect').addEventListener('change', async (e) => {
+        const vmId = e.target.value;
+        if (!vmId) {
+          tsSecteur.clearOptions(); tsPharmacy.clearOptions();
+          return;
+        }
+        await loadSecteursForVm(vmId);
+        await loadPharmaciesForVm(vmId, null);
+      });
+
+      // Au changement de secteur, recharger les pharmacies
+      document.getElementById('secteurSelect').addEventListener('change', async (e) => {
+        const vmId = document.getElementById('vmSelect').value;
+        const secteurId = e.target.value || null;
+        if (vmId) await loadPharmaciesForVm(vmId, secteurId);
+      });
+    });
+  </script>
+</head>
+<body class="bg-gray-100 p-6" oninput="calculerTotal()">
+<div th:replace="fragments/header :: body"></div>
+
+<div class="max-w-6xl mx-auto bg-white shadow-md rounded-xl p-8">
+  <h1 class="text-3xl font-bold text-indigo-700 mb-6">Commande pour Offre :
+    <span th:text="${offreSelectionnee.nom}"></span>
+  </h1>
+
+  <form th:action="@{/DSM/commandes/preview}" method="post">
+    <input type="hidden" name="offreId" th:value="${offreSelectionnee.id}" />
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-gray-700 font-medium mb-2">VM (client)</label>
+        <select id="vmSelect" name="vmId" required class="w-full border border-gray-300 rounded px-4 py-2">
+          <option value="">-- Choisir un VM --</option>
+          <option th:each="u : ${vms}" th:value="${u.id}" th:text="${u.username}"></option>
+        </select>
+      </div>
+      <div>
+        <label for="secteurSelect" class="block text-gray-700 font-medium mb-2">Secteur</label>
+        <select id="secteurSelect" class="w-full border border-gray-300 rounded px-4 py-2">
+          <option value="">-- Tous les secteurs --</option>
+        </select>
+      </div>
+      <div class="md:col-span-2">
+        <label for="pharmacySelect" class="block text-gray-700 font-medium mb-2">Pharmacie</label>
+        <select id="pharmacySelect" name="pharmacyId" required class="w-full border border-gray-300 rounded px-4 py-2">
+          <option value="">-- Choisir une pharmacie --</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto mt-6">
+      <table class="min-w-full text-sm text-left border border-gray-300">
+        <thead class="bg-gray-100">
+        <tr>
+          <th class="p-2 border">Produit</th>
+          <th class="p-2 border">Prix (DH)</th>
+          <th class="p-2 border">Remise %</th>
+          <th class="p-2 border">Min</th>
+          <th class="p-2 border">Max</th>
+          <th class="p-2 border">Colisage</th>
+          <th class="p-2 border">Quantité</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${produits}" class="ligne-produit hover:bg-gray-50">
+          <td class="p-2 border" th:text="${p.produit?.nom ?: 'Produit manquant'}"></td>
+          <td class="p-2 border prix" th:text="${#numbers.formatDecimal(p.prix, 1, 2)}"></td>
+          <td class="p-2 border remise" th:text="${p.remisePourcent}"></td>
+          <td class="p-2 border" th:text="${p.quantiteMin}"></td>
+          <td class="p-2 border" th:text="${p.quantiteMax}"></td>
+          <td class="p-2 border" th:text="${p.colisage}">-</td>
+          <td class="p-2 border">
+            <input type="number" th:name="${'quantite_' + (p.produit?.id ?: 0)}" class="quantite w-full border border-gray-300 rounded px-2 py-1" min="0" placeholder="0" />
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 text-right text-lg font-semibold text-gray-700">
+      Total brut : <span id="totalBrut" class="text-gray-600">0 DH</span><br>
+      Remise paiement : <span id="remisePaiement" class="text-red-600">- 0.00 DH</span><br>
+      Total estimé : <span id="totalCommande" class="text-indigo-600">0 DH</span>
+    </div>
+
+    <div class="mb-4 mt-4">
+      <label class="block text-sm">Condition de Paiement</label>
+      <select name="conditionPaiement" required class="w-full border rounded px-3 py-2 mb-4" onchange="calculerTotal()">
+        <option value="">-- Choisir --</option>
+        <option>30 Jours</option>
+        <option>45 Jours</option>
+        <option>60 Jours</option>
+        <option>75 Jours</option>
+        <option>90 Jours</option>
+        <option>120 Jours</option>
+        <option>180 Jours</option>
+        <option>AU COMPTANT</option>
+        <option>AU COMPTANT SE</option>
+      </select>
+
+      <label class="block text-sm">Type de Règlement</label>
+      <select name="typeReglement" required class="w-full border rounded px-3 py-2 mb-4">
+        <option value="">-- Choisir --</option>
+        <option>Traite</option>
+        <option>Chéque</option>
+        <option>Espéce</option>
+        <option>Virement</option>
+      </select>
+
+      <label class="block text-sm">Consignes</label>
+      <textarea name="consignes" rows="4" class="w-full border rounded px-3 py-2 mb-4" placeholder="Ajouter des consignes éventuelles..."></textarea>
+    </div>
+
+    <div class="mt-6 text-right">
+      <button type="submit" class="bg-indigo-600 text-white px-5 py-2 rounded hover:bg-indigo-700 transition">Prévisualiser</button>
+    </div>
+  </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Utilisateurs - Admin (Debug)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div class="flex items-center">
+                    <a href="/admin/dashboard" class="text-blue-600 hover:text-blue-800 mr-4">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <h1 class="text-2xl font-bold text-gray-900">Gestion des Utilisateurs (Debug)</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/admin/dashboard" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-home"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Debug Info -->
+        <div class="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded mb-6">
+            <h3>Debug Information:</h3>
+            <p>Users count: <span th:text="${#lists.size(users)}">0</span></p>
+            <p>Roles count: <span th:text="${#lists.size(roles)}">0</span></p>
+            <p>Users object: <span th:text="${users}">null</span></p>
+            <p>Roles object: <span th:text="${roles}">null</span></p>
+        </div>
+
+        <!-- Flash Messages -->
+        <div th:if="${success}" class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+            <span th:text="${success}"></span>
+        </div>
+        
+        <div th:if="${error}" class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- Simple Users List -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Liste des Utilisateurs (Debug)</h2>
+            
+            <div th:if="${!#lists.isEmpty(users)}">
+                <p>Utilisateurs trouvés:</p>
+                <ul>
+                    <li th:each="user : ${users}" th:text="${user.username}">Username</li>
+                </ul>
+            </div>
+            
+            <div th:if="${#lists.isEmpty(users)}">
+                <p>Aucun utilisateur trouvé</p>
+            </div>
+        </div>
+
+        <!-- Simple Roles List -->
+        <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Liste des Rôles (Debug)</h2>
+            
+            <div th:if="${!#lists.isEmpty(roles)}">
+                <p>Rôles trouvés:</p>
+                <ul>
+                    <li th:each="role : ${roles}" th:text="${role.name}">Role</li>
+                </ul>
+            </div>
+            
+            <div th:if="${#lists.isEmpty(roles)}">
+                <p>Aucun rôle trouvé</p>
+            </div>
+        </div>
+    </div>
+    
+</body>
+</html>

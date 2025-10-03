@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${user.id != null ? 'Modifier' : 'Créer'} + ' un Utilisateur - Admin'">Utilisateur - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div class="flex items-center">
+                    <a href="/admin/users" class="text-blue-600 hover:text-blue-800 mr-4">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <h1 class="text-2xl font-bold text-gray-900" th:text="${user.id != null ? 'Modifier' : 'Créer'} + ' un Utilisateur'">Utilisateur</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/admin/users" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-list"></i>
+                    </a>
+                    <a href="/admin/dashboard" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-home"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Flash Messages -->
+        <div th:if="${success}" class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span th:text="${success}"></span>
+        </div>
+        
+        <div th:if="${error}" class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- User Form -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <form th:action="${user.id != null ? '/admin/users/' + user.id : '/admin/users'}" 
+                  th:object="${user}" method="post" class="space-y-6">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                
+                <!-- Basic Information -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        <i class="fas fa-user mr-2 text-blue-600"></i>
+                        Informations de base
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
+                                Nom d'utilisateur <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="username" th:field="*{username}" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   th:readonly="${user.id != null}"
+                                   required>
+                            <div th:if="${#fields.hasErrors('username')}" class="text-red-500 text-sm mt-1">
+                                <span th:errors="*{username}"></span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                                Mot de passe <span th:if="${user.id == null}" class="text-red-500">*</span>
+                            </label>
+                            <input type="password" id="password" th:field="*{password}" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   th:required="${user.id == null}">
+                            <div th:if="${#fields.hasErrors('password')}" class="text-red-500 text-sm mt-1">
+                                <span th:errors="*{password}"></span>
+                            </div>
+                            <p th:if="${user.id != null}" class="text-gray-500 text-sm mt-1">
+                                Laissez vide pour conserver le mot de passe actuel
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role and Status -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        <i class="fas fa-shield-alt mr-2 text-green-600"></i>
+                        Rôle et Statut
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="role" class="block text-sm font-medium text-gray-700 mb-2">
+                                Rôle <span class="text-red-500">*</span>
+                            </label>
+                            <select id="role" th:field="*{role}" 
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    required>
+                                <option value="">Sélectionner un rôle</option>
+                                <option th:each="roleOption : ${roles}" 
+                                        th:value="${roleOption.id}" 
+                                        th:text="${roleOption.name}"
+                                        th:selected="${user.role != null && user.role.id == roleOption.id}">
+                                    Rôle
+                                </option>
+                            </select>
+                            <div th:if="${#fields.hasErrors('role')}" class="text-red-500 text-sm mt-1">
+                                <span th:errors="*{role}"></span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Statut
+                            </label>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="enabled" th:field="*{enabled}" 
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <label for="enabled" class="ml-2 block text-sm text-gray-900">
+                                    Utilisateur actif
+                                </label>
+                            </div>
+                            <p class="text-gray-500 text-sm mt-1">
+                                Un utilisateur inactif ne peut pas se connecter
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sectors -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        <i class="fas fa-map-marker-alt mr-2 text-purple-600"></i>
+                        Secteurs d'activité
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div th:each="secteur : ${secteurs}" class="flex items-center">
+                            <input type="checkbox" th:id="'secteur-' + ${secteur.id}" 
+                                   th:name="secteurIds" th:value="${secteur.id}"
+                                   th:checked="${user.secteurs != null && user.secteurs.contains(secteur)}"
+                                   class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                            <label th:for="'secteur-' + ${secteur.id}" class="ml-2 block text-sm text-gray-900" 
+                                   th:text="${secteur.nom}">
+                                Secteur
+                            </label>
+                        </div>
+                    </div>
+                    <p class="text-gray-500 text-sm mt-2">
+                        Sélectionnez les secteurs géographiques où cet utilisateur peut opérer
+                    </p>
+                </div>
+
+                <!-- Product Lines -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        <i class="fas fa-tags mr-2 text-orange-600"></i>
+                        Gammes de produits
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div th:each="gamme : ${gammes}" class="flex items-center">
+                            <input type="checkbox" th:id="'gamme-' + ${gamme.id}" 
+                                   th:name="gammeIds" th:value="${gamme.id}"
+                                   th:checked="${user.gammes != null && user.gammes.contains(gamme)}"
+                                   class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                            <label th:for="'gamme-' + ${gamme.id}" class="ml-2 block text-sm text-gray-900" 
+                                   th:text="${gamme.nom}">
+                                Gamme
+                            </label>
+                        </div>
+                    </div>
+                    <p class="text-gray-500 text-sm mt-2">
+                        Sélectionnez les gammes de produits que cet utilisateur peut gérer
+                    </p>
+                </div>
+
+                <!-- Manager Assignment -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        <i class="fas fa-user-tie mr-2 text-indigo-600"></i>
+                        Gestionnaire
+                    </h3>
+                    
+                    <div>
+                        <label for="manager" class="block text-sm font-medium text-gray-700 mb-2">
+                            Gestionnaire responsable
+                        </label>
+                        <select id="manager" th:field="*{manager}" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Aucun gestionnaire</option>
+                            <option th:each="managerOption : ${users}" 
+                                    th:if="${managerOption.role.name == 'ROLE_DSM'}"
+                                    th:value="${managerOption.id}" 
+                                    th:text="${managerOption.username}"
+                                    th:selected="${user.manager != null && user.manager.id == managerOption.id}">
+                                Manager
+                            </option>
+                        </select>
+                        <p class="text-gray-500 text-sm mt-1">
+                            Laissez vide si cet utilisateur n'a pas de gestionnaire
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-end space-x-4 pt-6">
+                    <a href="/admin/users" 
+                       class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors">
+                        <i class="fas fa-times mr-2"></i>Annuler
+                    </a>
+                    <button type="submit" 
+                            class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-save mr-2"></i>
+                        <span th:text="${user.id != null ? 'Mettre à jour' : 'Créer'}">Sauvegarder</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Form validation and enhancement
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const usernameField = document.getElementById('username');
+            const passwordField = document.getElementById('password');
+            const roleField = document.getElementById('role');
+
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+                let errorMessage = '';
+
+                // Validate required fields
+                if (!usernameField.value.trim()) {
+                    errorMessage += 'Le nom d\'utilisateur est requis.\n';
+                    isValid = false;
+                }
+
+                if (!roleField.value) {
+                    errorMessage += 'Le rôle est requis.\n';
+                    isValid = false;
+                }
+
+                // Check if it's a new user and password is required
+                const isNewUser = !usernameField.hasAttribute('readonly');
+                if (isNewUser && !passwordField.value.trim()) {
+                    errorMessage += 'Le mot de passe est requis pour un nouvel utilisateur.\n';
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Veuillez corriger les erreurs suivantes:\n\n' + errorMessage);
+                }
+            });
+
+            // Password strength indicator (for new users)
+            if (passwordField) {
+                passwordField.addEventListener('input', function() {
+                    const password = this.value;
+                    const strength = calculatePasswordStrength(password);
+                    updatePasswordStrengthIndicator(strength);
+                });
+            }
+        });
+
+        function calculatePasswordStrength(password) {
+            let score = 0;
+            if (password.length >= 8) score++;
+            if (/[a-z]/.test(password)) score++;
+            if (/[A-Z]/.test(password)) score++;
+            if (/[0-9]/.test(password)) score++;
+            if (/[^A-Za-z0-9]/.test(password)) score++;
+            return score;
+        }
+
+        function updatePasswordStrengthIndicator(strength) {
+            // Implementation for password strength indicator
+            // This could be enhanced with visual feedback
+        }
+    </script>
+
+</body>
+</html>

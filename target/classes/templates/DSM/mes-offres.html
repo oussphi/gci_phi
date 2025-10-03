@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mes Offres</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+<div th:replace="~{fragments/header :: body}"></div>
+
+<div class="max-w-6xl mx-auto bg-white rounded-xl shadow p-6">
+    <div class="flex items-center justify-between mb-4">
+        <h1 class="text-2xl font-bold text-indigo-700">Mes Offres</h1>
+
+        <!-- Tabs Active / Archived -->
+        <div class="inline-flex rounded-lg overflow-hidden border border-gray-200">
+            <a th:href="@{/DSM/mes-offres(type='active',size=${size})}"
+               th:classappend="${type}=='active' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
+               class="px-4 py-2 text-sm font-medium">
+                En cours (<span th:text="${activeOffresCount}">0</span>)
+            </a>
+            <a th:href="@{/DSM/mes-offres(type='archived',size=${size})}"
+               th:classappend="${type}=='archived' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
+               class="px-4 py-2 text-sm font-medium border-l border-gray-200">
+                Archivées (<span th:text="${archivedOffresCount}">0</span>)
+            </a>
+        </div>
+    </div>
+
+    <!-- Résumé -->
+    <div class="flex items-center justify-between text-sm text-gray-600 mb-3">
+        <div>
+            <span th:text="${type}=='active' ? 'Offres en cours' : 'Offres archivées'">Offres</span>
+            — affichage
+            <span th:text="${(currentPage * size) + 1}">1</span>–
+            <span th:text="${(currentPage * size) + offres.size()}">10</span>
+            sur <span th:text="${totalOffres}">0</span>
+        </div>
+        <div class="italic" th:text="${today != null} ? ${#temporals.format(today,'dd/MM/yyyy')} : ''">01/09/2025</div>
+    </div>
+
+    <!-- Tableau groupé par date de fin -->
+    <div class="overflow-x-auto border border-gray-200 rounded-lg">
+        <table class="min-w-full table-auto">
+            <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-600">
+            <tr>
+                <th class="px-4 py-3 text-left">Nom</th>
+                <th class="px-4 py-3 text-left">Description</th>
+                <th class="px-4 py-3 text-left">Date début</th>
+                <th class="px-4 py-3 text-left">Date fin</th>
+                <th class="px-4 py-3 text-left">Statut</th>
+                <th class="px-4 py-3 text-left">Action</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+            <tr th:if="${#lists.isEmpty(offres)}">
+                <td colspan="6" class="px-4 py-6 text-center text-gray-500">
+                    Aucune offre à afficher.
+                </td>
+            </tr>
+
+            <!-- Rendu groupé si présent -->
+            <th:block th:if="${groupedOffres != null}">
+                <th:block th:each="entry : ${groupedOffres}">
+                    <!-- En-tête de groupe (date) -->
+                    <tr class="bg-indigo-50">
+                        <th colspan="6" class="px-4 py-2 text-indigo-800 text-sm">
+                            <span class="font-semibold" th:text="${#temporals.format(entry.key,'dd/MM/yyyy')}">01/09/2025</span>
+                            <span class="ml-2 text-indigo-700/70">(date de fin)</span>
+                        </th>
+                    </tr>
+                    <!-- Lignes du groupe -->
+                    <tr th:each="offre : ${entry.value}" class="hover:bg-gray-50">
+                        <td class="px-4 py-3" th:text="${offre.nom}">Nom</td>
+                        <td class="px-4 py-3 truncate max-w-[24rem]" th:text="${offre.description}">Description</td>
+                        <td class="px-4 py-3" th:text="${#temporals.format(offre.dateDebut,'dd/MM/yyyy')}">01/09/2025</td>
+                        <td class="px-4 py-3" th:text="${#temporals.format(offre.dateFin,'dd/MM/yyyy')}">10/09/2025</td>
+                        <td class="px-4 py-3 space-x-2">
+                            <span th:if="${type=='active'}" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">En cours</span>
+                            <span th:if="${type=='archived'}" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700">Archivée</span>
+                            <span th:if="${offre.active}" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Actif</span>
+                            <span th:if="${!offre.active}" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">Inactif</span>
+                        </td>
+                        <td class="px-4 py-3 space-x-2">
+                            <a th:href="@{'/DSM/mes-offres/edit/' + ${offre.id}}" class="inline-flex items-center bg-amber-500 text-white px-3 py-1.5 rounded-md text-sm hover:bg-amber-600">Modifier</a>
+                            <form th:action="@{'/DSM/mes-offres/' + ${offre.id} + '/toggle'}" method="post" class="inline">
+                                <input type="hidden" name="page" th:value="${currentPage}"/>
+                                <input type="hidden" name="size" th:value="${size}"/>
+                                <input type="hidden" name="type" th:value="${type}"/>
+                                <input type="hidden" name="active" th:value="${!offre.active}"/>
+                                <th:block th:if="${_csrf} != null">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                </th:block>
+                                <button type="submit"
+                                        th:text="${offre.active} ? 'Désactiver' : 'Activer'"
+                                        th:classappend="${offre.active} ? ' bg-red-600 hover:bg-red-700' : ' bg-green-600 hover:bg-green-700'"
+                                        class="inline-flex items-center text-white px-3 py-1.5 rounded-md text-sm">
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </th:block>
+            </th:block>
+
+            <!-- Fallback: rendu simple si pas de groupedOffres -->
+            <th:block th:if="${groupedOffres == null}">
+                <tr th:each="offre : ${offres}" class="hover:bg-gray-50">
+                    <td class="px-4 py-3" th:text="${offre.nom}">Nom</td>
+                    <td class="px-4 py-3 truncate max-w-[24rem]" th:text="${offre.description}">Description</td>
+                    <td class="px-4 py-3" th:text="${#temporals.format(offre.dateDebut,'dd/MM/yyyy')}">01/09/2025</td>
+                    <td class="px-4 py-3" th:text="${#temporals.format(offre.dateFin,'dd/MM/yyyy')}">10/09/2025</td>
+                    <td class="px-4 py-3 space-x-2">
+                        <span th:if="${type=='active'}" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">En cours</span>
+                        <span th:if="${type=='archived'}" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700">Archivée</span>
+                        <span th:if="${offre.active}" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Actif</span>
+                        <span th:if="${!offre.active}" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">Inactif</span>
+                    </td>
+                    <td class="px-4 py-3 space-x-2">
+                        <a th:href="@{'/DSM/mes-offres/edit/' + ${offre.id}}" class="inline-flex items-center bg-amber-500 text-white px-3 py-1.5 rounded-md text-sm hover:bg-amber-600">Modifier</a>
+                        <form th:action="@{'/DSM/mes-offres/' + ${offre.id} + '/toggle'}" method="post" class="inline">
+                            <input type="hidden" name="page" th:value="${currentPage}"/>
+                            <input type="hidden" name="size" th:value="${size}"/>
+                            <input type="hidden" name="type" th:value="${type}"/>
+                            <input type="hidden" name="active" th:value="${!offre.active}"/>
+                            <th:block th:if="${_csrf} != null">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            </th:block>
+                            <button type="submit"
+                                    th:text="${offre.active} ? 'Désactiver' : 'Activer'"
+                                    th:classappend="${offre.active} ? ' bg-red-600 hover:bg-red-700' : ' bg-green-600 hover:bg-green-700'"
+                                    class="inline-flex items-center text-white px-3 py-1.5 rounded-md text-sm">
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            </th:block>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex items-center justify-between mt-4">
+        <div class="text-sm text-gray-500">
+            Page <span class="font-medium" th:text="${currentPage + 1}">1</span> / <span th:text="${totalPages}">1</span>
+        </div>
+
+        <nav class="inline-flex rounded-md shadow-sm" aria-label="Pagination" th:if="${totalPages > 1}">
+            <a th:href="@{/DSM/mes-offres(page=${currentPage-1},size=${size},type=${type})}"
+               th:classappend="${hasPrevious} ? '' : 'pointer-events-none opacity-40'"
+               class="px-3 py-2 text-sm border border-gray-200 rounded-l-md bg-white hover:bg-gray-50">Préc.</a>
+
+            <a th:each="i : ${pageNumbers}"
+               th:text="${i + 1}"
+               th:href="@{/DSM/mes-offres(page=${i},size=${size},type=${type})}"
+               class="px-3 py-2 text-sm border-t border-b border-gray-200 bg-white hover:bg-gray-50"
+               th:classappend="${i}==${currentPage} ? ' font-semibold bg-indigo-600 text-white hover:bg-indigo-600' : ''">
+                1
+            </a>
+
+            <a th:href="@{/DSM/mes-offres(page=${currentPage+1},size=${size},type=${type})}"
+               th:classappend="${hasNext} ? '' : 'pointer-events-none opacity-40'"
+               class="px-3 py-2 text-sm border border-gray-200 rounded-r-md bg-white hover:bg-gray-50">Suiv.</a>
+        </nav>
+    </div>
+</div>
+</body>
+</html>
